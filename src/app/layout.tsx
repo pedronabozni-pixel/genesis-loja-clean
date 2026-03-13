@@ -1,3 +1,4 @@
+import "./globals.css";
 import type { Metadata } from "next";
 import { StoreFooter } from "@/components/store/store-footer";
 import { StoreHeader } from "@/components/store/store-header";
