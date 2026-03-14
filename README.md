@@ -21,7 +21,7 @@ npm run dev
 Variaveis de ambiente minimas:
 
 ```bash
-STORE_ADMIN_PASSWORD=Genesis@123
+STORE_ADMIN_PASSWORD=G3n3s1sK0r3K@2010
 STORE_ADMIN_SESSION_TOKEN=genesis-admin-session-ok
 UPLOAD_STORAGE_DIR=.uploads
 ```
