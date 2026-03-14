@@ -21,7 +21,7 @@
     ],
     "costCents": 10500,
     "category": "Smartwatch",
-    "videoUrl": "/uploads/store/1772722316378-aa774354-74a9-4127-bce0-56a539bd0a76.mov"
+    "videoUrl": "/uploads/store/1772722316378-aa774354-74a9-4127-bce0-56a539bd0a76.mp4"
   },
   {
     "id": "p2",
@@ -42,7 +42,7 @@
     ],
     "costCents": 5000,
     "category": "Fone Bluetooth",
-    "videoUrl": "/uploads/store/1772722329798-1136a61e-d372-4be9-83c1-1835490fe58d.mov"
+    "videoUrl": "/uploads/store/1772722329798-1136a61e-d372-4be9-83c1-1835490fe58d.mp4"
   },
   {
     "id": "p3",
@@ -62,7 +62,7 @@
     ],
     "costCents": 3600,
     "category": "Fone TWS",
-    "videoUrl": "/uploads/store/1772722386999-50c77c71-12ab-4274-8e68-a792098b36ae.mov"
+    "videoUrl": "/uploads/store/1772722386999-50c77c71-12ab-4274-8e68-a792098b36ae.mp4"
   },
   {
     "id": "p4",
@@ -82,7 +82,7 @@
     ],
     "costCents": 2800,
     "category": "Fone TWS",
-    "videoUrl": "/uploads/store/1772722396630-3a3d6033-7c0a-444e-88b7-09b1b16dc7f5.mov"
+    "videoUrl": "/uploads/store/1772722396630-3a3d6033-7c0a-444e-88b7-09b1b16dc7f5.mp4"
   },
   {
     "id": "p5",
@@ -102,7 +102,7 @@
     ],
     "costCents": 5200,
     "category": "Microfone Lapela",
-    "videoUrl": "/uploads/store/1772722409616-2ea9d247-1d9b-4e52-9974-d916308cbcfd.mov"
+    "videoUrl": "/uploads/store/1772722409616-2ea9d247-1d9b-4e52-9974-d916308cbcfd.mp4"
   },
   {
     "id": "p6",
@@ -122,7 +122,7 @@
     ],
     "costCents": 5500,
     "category": "Pistola de Massagem",
-    "videoUrl": "/uploads/store/1772722419253-b3f7f6fa-0c89-46ba-b620-f31fddb6fb77.mov"
+    "videoUrl": "/uploads/store/1772722419253-b3f7f6fa-0c89-46ba-b620-f31fddb6fb77.mp4"
   },
   {
     "id": "p7",
@@ -142,6 +142,6 @@
     ],
     "costCents": 4800,
     "category": "Power Bank",
-    "videoUrl": "/uploads/store/1772722430282-ac9be095-fd33-4800-84e6-ced3cb7459b5.mov"
+    "videoUrl": "/uploads/store/1772722430282-ac9be095-fd33-4800-84e6-ced3cb7459b5.mp4"
   }
 ]
