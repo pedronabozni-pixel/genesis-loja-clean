@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { appendNewsletterLeadToGoogleSheets, isGoogleSheetsConfigured } from "@/lib/google-sheets";
+import { isNewsletterEmailConfigured, sendNewsletterLeadEmail } from "@/lib/newsletter-email";
 import { saveNewsletterLead } from "@/lib/store-data";
 
 const schema = z.object({
@@ -17,12 +17,12 @@ export async function POST(request: Request) {
 
   const lead = await saveNewsletterLead(parsed.data.email);
 
-  if (isGoogleSheetsConfigured()) {
+  if (isNewsletterEmailConfigured()) {
     try {
-      await appendNewsletterLeadToGoogleSheets(lead.email, lead.createdAt);
+      await sendNewsletterLeadEmail(lead.email, lead.createdAt);
     } catch (error) {
-      // Mantemos o lead salvo localmente mesmo se a planilha estiver indisponivel.
-      console.error("Falha ao enviar lead para o Google Sheets:", error);
+      // Mantemos o lead salvo localmente mesmo se o envio por e-mail falhar.
+      console.error("Falha ao enviar lead por e-mail:", error);
     }
   }
 

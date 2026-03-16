@@ -26,27 +26,27 @@ STORE_ADMIN_SESSION_TOKEN=genesis-admin-session-ok
 UPLOAD_STORAGE_DIR=.uploads
 ```
 
-## Google Sheets para newsletter
+## E-mail para newsletter
 
-Se quiser salvar os leads da newsletter em uma planilha do Google Sheets, adicione estas variaveis:
+Se quiser receber os leads da newsletter por e-mail, adicione estas variaveis:
 
 ```bash
-GOOGLE_SHEETS_CLIENT_EMAIL=
-GOOGLE_SHEETS_PRIVATE_KEY=
-GOOGLE_SHEETS_SPREADSHEET_ID=
-GOOGLE_SHEETS_SHEET_NAME=Leads
+SMTP_HOST=
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=
+SMTP_PASS=
+SMTP_FROM_EMAIL=
+NEWSLETTER_RECEIVER_EMAIL=Contato@genesisecom.com.br
 ```
 
 Fluxo de configuracao:
 
-1. Crie uma conta de servico no Google Cloud com acesso ao Google Sheets API.
-2. Gere a chave JSON dessa conta de servico.
-3. Copie o `client_email` para `GOOGLE_SHEETS_CLIENT_EMAIL`.
-4. Copie a `private_key` para `GOOGLE_SHEETS_PRIVATE_KEY`.
-   Use a chave completa com `\\n` no lugar das quebras de linha ao salvar na Railway.
-5. Copie o ID da planilha para `GOOGLE_SHEETS_SPREADSHEET_ID`.
-6. Compartilhe a planilha com o e-mail da conta de servico, com permissao de edicao.
-7. Opcionalmente, crie uma aba chamada `Leads` ou informe outro nome em `GOOGLE_SHEETS_SHEET_NAME`.
+1. Use a conta de e-mail que vai enviar as mensagens da loja.
+2. Preencha `SMTP_HOST`, `SMTP_PORT` e `SMTP_SECURE` conforme o provedor de e-mail.
+3. Preencha `SMTP_USER` e `SMTP_PASS` com as credenciais SMTP.
+4. Use em `SMTP_FROM_EMAIL` o e-mail remetente desejado.
+5. Use em `NEWSLETTER_RECEIVER_EMAIL` o e-mail que vai receber os leads.
 
 Mesmo com a integracao ativa, a loja continua salvando uma copia local do lead como backup.
 
