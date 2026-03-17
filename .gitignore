@@ -1,6 +1,7 @@
 .next
 node_modules
 .uploads
+.data
 .env
 .env.local
 tsconfig.tsbuildinfo

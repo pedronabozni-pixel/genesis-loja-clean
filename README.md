@@ -24,6 +24,21 @@ Variaveis de ambiente minimas:
 STORE_ADMIN_PASSWORD=G3n3s1sK0r3K@2010
 STORE_ADMIN_SESSION_TOKEN=genesis-admin-session-ok
 UPLOAD_STORAGE_DIR=.uploads
+NEWSLETTER_DB_PATH=.data/newsletter.sqlite
+```
+
+## Banco local da newsletter
+
+Os e-mails da newsletter agora ficam em um banco SQLite local da loja.
+
+- Arquivo padrao: `.data/newsletter.sqlite`
+- Tabela: `newsletter_leads`
+- Migracao automatica: no primeiro uso, os e-mails antigos de `src/data/newsletter-leads.json` sao copiados para o banco
+
+Se quiser trocar o caminho do arquivo do banco na Railway ou localmente, use:
+
+```bash
+NEWSLETTER_DB_PATH=.data/newsletter.sqlite
 ```
 
 ## E-mail para newsletter

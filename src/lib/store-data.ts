@@ -1,9 +1,9 @@
 import { promises as fs } from "fs";
 import path from "path";
 import type { NewsletterLead, Product, SiteContent } from "@/types/store";
+import { saveNewsletterLeadToDb } from "@/lib/newsletter-db";
 
 const productsPath = path.join(process.cwd(), "src/data/products.json");
-const newsletterPath = path.join(process.cwd(), "src/data/newsletter-leads.json");
 const siteContentPath = path.join(process.cwd(), "src/data/site-content.json");
 
 export async function getProducts(): Promise<Product[]> {
@@ -61,21 +61,7 @@ export async function deleteProduct(slug: string): Promise<boolean> {
 }
 
 export async function saveNewsletterLead(email: string): Promise<NewsletterLead> {
-  const lead: NewsletterLead = {
-    email,
-    createdAt: new Date().toISOString()
-  };
-
-  const data = await fs.readFile(newsletterPath, "utf8");
-  const list = JSON.parse(data) as NewsletterLead[];
-
-  if (!list.some((item) => item.email.toLowerCase() === email.toLowerCase())) {
-    // Evita e-mails duplicados na lista de newsletter.
-    list.push(lead);
-    await fs.writeFile(newsletterPath, JSON.stringify(list, null, 2), "utf8");
-  }
-
-  return lead;
+  return saveNewsletterLeadToDb(email);
 }
 
 export async function getSiteContent(): Promise<SiteContent> {
