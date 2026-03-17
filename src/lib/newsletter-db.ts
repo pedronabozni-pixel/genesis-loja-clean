@@ -1,73 +1,32 @@
 import { promises as fs } from "fs";
 import path from "path";
-import sqlite3 from "sqlite3";
+import { Pool } from "pg";
 import type { NewsletterLead } from "@/types/store";
 
 const newsletterJsonPath = path.join(process.cwd(), "src/data/newsletter-leads.json");
-const defaultDbPath = path.join(process.cwd(), ".data", "newsletter.sqlite");
 
-let dbPromise: Promise<sqlite3.Database> | null = null;
+let pool: Pool | null = null;
+let initialized = false;
 
-function getDatabasePath() {
-  return process.env.NEWSLETTER_DB_PATH
-    ? path.resolve(process.env.NEWSLETTER_DB_PATH)
-    : defaultDbPath;
+function getDatabaseUrl() {
+  const databaseUrl = process.env.DATABASE_URL;
+
+  if (!databaseUrl) {
+    throw new Error("DATABASE_URL nao configurada.");
+  }
+
+  return databaseUrl;
 }
 
-async function ensureDatabaseDir() {
-  await fs.mkdir(path.dirname(getDatabasePath()), { recursive: true });
-}
-
-function openDatabase(filePath: string) {
-  return new Promise<sqlite3.Database>((resolve, reject) => {
-    const db = new sqlite3.Database(filePath, (error) => {
-      if (error) {
-        reject(error);
-        return;
-      }
-
-      resolve(db);
+function getPool() {
+  if (!pool) {
+    pool = new Pool({
+      connectionString: getDatabaseUrl(),
+      ssl: process.env.DATABASE_SSL === "false" ? false : { rejectUnauthorized: false }
     });
-  });
-}
+  }
 
-function run(db: sqlite3.Database, sql: string, params: Array<string | number | null> = []) {
-  return new Promise<void>((resolve, reject) => {
-    db.run(sql, params, (error) => {
-      if (error) {
-        reject(error);
-        return;
-      }
-
-      resolve();
-    });
-  });
-}
-
-function get<T>(db: sqlite3.Database, sql: string, params: Array<string | number | null> = []) {
-  return new Promise<T | undefined>((resolve, reject) => {
-    db.get(sql, params, (error, row) => {
-      if (error) {
-        reject(error);
-        return;
-      }
-
-      resolve(row as T | undefined);
-    });
-  });
-}
-
-function all<T>(db: sqlite3.Database, sql: string, params: Array<string | number | null> = []) {
-  return new Promise<T[]>((resolve, reject) => {
-    db.all(sql, params, (error, rows) => {
-      if (error) {
-        reject(error);
-        return;
-      }
-
-      resolve((rows as T[]) ?? []);
-    });
-  });
+  return pool;
 }
 
 async function readLegacyLeadsJson() {
@@ -79,72 +38,59 @@ async function readLegacyLeadsJson() {
   }
 }
 
-async function migrateLegacyNewsletterJson(db: sqlite3.Database) {
-  const existing = await get<{ total: number }>(db, "SELECT COUNT(*) as total FROM newsletter_leads");
+async function initializeNewsletterDb() {
+  if (initialized) return;
 
-  if ((existing?.total ?? 0) > 0) {
-    return;
+  const db = getPool();
+
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS newsletter_leads (
+      id BIGSERIAL PRIMARY KEY,
+      email TEXT NOT NULL UNIQUE,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+
+  const countResult = await db.query<{ total: string }>("SELECT COUNT(*)::text AS total FROM newsletter_leads");
+  const total = Number.parseInt(countResult.rows[0]?.total ?? "0", 10);
+
+  if (total === 0) {
+    const legacyLeads = await readLegacyLeadsJson();
+
+    for (const lead of legacyLeads) {
+      await db.query(
+        `
+          INSERT INTO newsletter_leads (email, created_at)
+          VALUES ($1, $2)
+          ON CONFLICT (email) DO NOTHING
+        `,
+        [lead.email.trim().toLowerCase(), lead.createdAt]
+      );
+    }
   }
 
-  const legacyLeads = await readLegacyLeadsJson();
-
-  for (const lead of legacyLeads) {
-    await run(
-      db,
-      `
-        INSERT OR IGNORE INTO newsletter_leads (email, created_at)
-        VALUES (?, ?)
-      `,
-      [lead.email.trim().toLowerCase(), lead.createdAt]
-    );
-  }
-}
-
-async function initializeDatabase() {
-  await ensureDatabaseDir();
-  const db = await openDatabase(getDatabasePath());
-
-  await run(
-    db,
-    `
-      CREATE TABLE IF NOT EXISTS newsletter_leads (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        email TEXT NOT NULL UNIQUE,
-        created_at TEXT NOT NULL
-      )
-    `
-  );
-
-  await migrateLegacyNewsletterJson(db);
-  return db;
-}
-
-async function getDatabase() {
-  if (!dbPromise) {
-    dbPromise = initializeDatabase();
-  }
-
-  return dbPromise;
+  initialized = true;
 }
 
 export async function saveNewsletterLeadToDb(email: string) {
-  const db = await getDatabase();
+  await initializeNewsletterDb();
+  const db = getPool();
   const normalizedEmail = email.trim().toLowerCase();
 
-  const existing = await get<{ email: string; created_at: string }>(
-    db,
+  const existing = await db.query<{ email: string; created_at: string }>(
     `
       SELECT email, created_at
       FROM newsletter_leads
-      WHERE email = ?
+      WHERE email = $1
+      LIMIT 1
     `,
     [normalizedEmail]
   );
 
-  if (existing) {
+  if (existing.rows[0]) {
     return {
-      email: existing.email,
-      createdAt: existing.created_at
+      email: existing.rows[0].email,
+      createdAt: new Date(existing.rows[0].created_at).toISOString()
     } satisfies NewsletterLead;
   }
 
@@ -153,11 +99,10 @@ export async function saveNewsletterLeadToDb(email: string) {
     createdAt: new Date().toISOString()
   };
 
-  await run(
-    db,
+  await db.query(
     `
       INSERT INTO newsletter_leads (email, created_at)
-      VALUES (?, ?)
+      VALUES ($1, $2)
     `,
     [lead.email, lead.createdAt]
   );
@@ -166,10 +111,10 @@ export async function saveNewsletterLeadToDb(email: string) {
 }
 
 export async function getNewsletterLeadsFromDb() {
-  const db = await getDatabase();
+  await initializeNewsletterDb();
+  const db = getPool();
 
-  const rows = await all<{ email: string; created_at: string }>(
-    db,
+  const result = await db.query<{ email: string; created_at: string }>(
     `
       SELECT email, created_at
       FROM newsletter_leads
@@ -177,8 +122,8 @@ export async function getNewsletterLeadsFromDb() {
     `
   );
 
-  return rows.map((row) => ({
+  return result.rows.map((row) => ({
     email: row.email,
-    createdAt: row.created_at
+    createdAt: new Date(row.created_at).toISOString()
   })) satisfies NewsletterLead[];
 }
