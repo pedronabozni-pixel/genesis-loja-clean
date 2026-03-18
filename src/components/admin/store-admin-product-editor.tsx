@@ -94,7 +94,7 @@ export function StoreAdminProductEditor({
         description: "Descrição completa do produto.",
         image: "",
         videoUrl: "",
-        hotmartUrl: "https://app.monetizze.com.br/checkout/SEULINK",
+        checkoutUrl: "https://buy.stripe.com/SEULINK",
         rating: 5,
         reviewsCount: 1,
         features: ["Novo diferencial do produto"],
@@ -456,11 +456,11 @@ export function StoreAdminProductEditor({
             </div>
 
             <label className="text-sm text-zinc-300 md:col-span-2">
-              Link Monetizze
+              Link Stripe
               <input
                 className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-zinc-100"
-                onChange={(event) => updateField(index, "hotmartUrl", event.target.value)}
-                value={product.hotmartUrl}
+                onChange={(event) => updateField(index, "checkoutUrl", event.target.value)}
+                value={product.checkoutUrl}
               />
             </label>
           </div>

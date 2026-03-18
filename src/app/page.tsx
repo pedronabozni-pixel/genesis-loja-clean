@@ -27,7 +27,7 @@ export default async function StoreHomePage() {
         </div>
         <div>
           <p className="text-xs uppercase tracking-[0.2em] text-amber-300">Compra segura</p>
-          <p className="mt-1 text-zinc-200">Checkout externo via Monetizze para maior confiança.</p>
+          <p className="mt-1 text-zinc-200">Checkout seguro via Stripe para maior confiança.</p>
         </div>
       </section>
 

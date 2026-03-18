@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { formatMoney } from "@/lib/utils";
 import type { Product } from "@/types/store";
-import { HotmartButton } from "@/components/store/hotmart-button";
+import { CheckoutButton } from "@/components/store/hotmart-button";
 import { ScarcityCountdown } from "@/components/store/scarcity-countdown";
 import { StarRating } from "@/components/store/star-rating";
 
@@ -24,9 +24,9 @@ export function HeroAnchor({ product }: { product: Product }) {
           ) : null}
           <ScarcityCountdown />
           <div className="flex flex-wrap items-center gap-3">
-            <HotmartButton
+            <CheckoutButton
               className="rounded-xl bg-amber-400 px-6 py-3 text-sm font-bold uppercase tracking-wide text-zinc-950 transition hover:scale-[1.02] hover:bg-amber-300"
-              href={product.hotmartUrl}
+              href={product.checkoutUrl}
               label={`Comprar Agora - ${formatMoney(product.priceCents)}`}
               productName={product.name}
             />

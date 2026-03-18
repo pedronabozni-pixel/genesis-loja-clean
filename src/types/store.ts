@@ -9,7 +9,7 @@ export type Product = {
   description: string;
   image: string;
   videoUrl?: string;
-  hotmartUrl: string;
+  checkoutUrl: string;
   rating: number;
   reviewsCount: number;
   isBestSeller?: boolean;

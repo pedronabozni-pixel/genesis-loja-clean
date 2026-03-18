@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     template: "%s | Genesis Distribuidora"
   },
   description:
-    "Loja oficial da Genesis Distribuidora com tecnologia premium, produto destaque H12 Ultra SE e compra rápida via Monetizze.",
+    "Loja oficial da Genesis Distribuidora com tecnologia premium, produto destaque H12 Ultra SE e compra rápida via Stripe.",
   openGraph: {
     title: "Genesis Distribuidora",
     description: "Produtos de tecnologia com foco em alta conversão.",

@@ -22,3 +22,5 @@ export function HotmartButton({ href, label, productName, className }: Props) {
     </a>
   );
 }
+
+export const CheckoutButton = HotmartButton;

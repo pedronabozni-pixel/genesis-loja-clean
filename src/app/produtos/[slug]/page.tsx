@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { FavoriteButton } from "@/components/store/favorite-button";
-import { HotmartButton } from "@/components/store/hotmart-button";
+import { CheckoutButton } from "@/components/store/hotmart-button";
 import { ProductCard } from "@/components/store/product-card";
 import { ProductViewTracker } from "@/components/store/product-view-tracker";
 import { StarRating } from "@/components/store/star-rating";
@@ -80,9 +80,9 @@ export default async function ProductPage({ params }: Props) {
           ) : null}
 
           <div className="flex flex-wrap items-center gap-3">
-            <HotmartButton
+            <CheckoutButton
               className="rounded-xl bg-amber-400 px-6 py-3 text-sm font-bold uppercase tracking-wide text-zinc-950 transition hover:scale-[1.02] hover:bg-amber-300"
-              href={product.hotmartUrl}
+              href={product.checkoutUrl}
               label="Compre agora"
               productName={product.name}
             />
