@@ -217,7 +217,7 @@ export function StoreAdminProductEditor({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3 rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4">
-        <p className="text-sm text-zinc-300">Edição local em JSON (src/data/products.json).</p>
+        <p className="text-sm text-zinc-300">Catálogo persistido em Postgres quando a `DATABASE_URL` estiver configurada.</p>
         <div className="flex items-center gap-2">
           <button
             className="rounded-lg bg-amber-400 px-3 py-2 text-sm font-semibold text-zinc-950 disabled:opacity-60"

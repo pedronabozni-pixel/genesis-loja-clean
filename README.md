@@ -7,7 +7,7 @@ Projeto limpo da loja Genesis Distribuidora, separado da plataforma cripto.
 - Next.js 15
 - React 19
 - Tailwind CSS
-- Dados locais em JSON
+- Catálogo persistido em Postgres
 
 ## Rodar localmente
 
@@ -28,12 +28,13 @@ DATABASE_URL=postgresql://postgres:senha@host:5432/railway
 DATABASE_SSL=true
 ```
 
-## Banco Postgres da newsletter
+## Banco Postgres
 
-Os e-mails da newsletter agora ficam em Postgres.
+Produtos e e-mails da newsletter agora ficam em Postgres.
 
+- Tabela: `store_products`
 - Tabela: `newsletter_leads`
-- Migracao automatica: no primeiro uso, os e-mails antigos de `src/data/newsletter-leads.json` sao copiados para o banco
+- Migracao automatica: no primeiro uso, os produtos de `src/data/products.json` e os leads de `src/data/newsletter-leads.json` sao copiados para o banco se as tabelas estiverem vazias
 
 Variaveis necessarias:
 

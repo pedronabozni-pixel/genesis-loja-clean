@@ -2,62 +2,34 @@ import { promises as fs } from "fs";
 import path from "path";
 import type { NewsletterLead, Product, SiteContent } from "@/types/store";
 import { saveNewsletterLeadToDb } from "@/lib/newsletter-db";
+import {
+  createProductInStore,
+  deleteProductFromStore,
+  getProductBySlugFromStore,
+  getProductsFromStore,
+  updateProductInStore
+} from "@/lib/product-db";
 
-const productsPath = path.join(process.cwd(), "src/data/products.json");
 const siteContentPath = path.join(process.cwd(), "src/data/site-content.json");
 
 export async function getProducts(): Promise<Product[]> {
-  // Leitura local em JSON para simular um banco simples da loja.
-  const data = await fs.readFile(productsPath, "utf8");
-  return JSON.parse(data) as Product[];
+  return getProductsFromStore();
 }
 
 export async function getProductBySlug(slug: string): Promise<Product | undefined> {
-  const products = await getProducts();
-  return products.find((product) => product.slug === slug);
+  return getProductBySlugFromStore(slug);
 }
 
 export async function updateProduct(slug: string, payload: Product): Promise<Product | null> {
-  const products = await getProducts();
-  const index = products.findIndex((product) => product.slug === slug);
-
-  if (index === -1) {
-    return null;
-  }
-
-  products[index] = payload;
-  // Persistencia local: o painel admin salva no arquivo products.json.
-  await fs.writeFile(productsPath, JSON.stringify(products, null, 2), "utf8");
-  return products[index];
-}
-
-function nextProductId(products: Product[]) {
-  const maxId = products.reduce((max, product) => {
-    const current = Number.parseInt(product.id.replace(/^p/, ""), 10);
-    if (Number.isNaN(current)) return max;
-    return Math.max(max, current);
-  }, 0);
-  return `p${maxId + 1}`;
+  return updateProductInStore(slug, payload);
 }
 
 export async function createProduct(payload: Product): Promise<Product> {
-  const products = await getProducts();
-  const withId = { ...payload, id: payload.id || nextProductId(products) };
-  products.push(withId);
-  await fs.writeFile(productsPath, JSON.stringify(products, null, 2), "utf8");
-  return withId;
+  return createProductInStore(payload);
 }
 
 export async function deleteProduct(slug: string): Promise<boolean> {
-  const products = await getProducts();
-  const filtered = products.filter((product) => product.slug !== slug);
-
-  if (filtered.length === products.length) {
-    return false;
-  }
-
-  await fs.writeFile(productsPath, JSON.stringify(filtered, null, 2), "utf8");
-  return true;
+  return deleteProductFromStore(slug);
 }
 
 export async function saveNewsletterLead(email: string): Promise<NewsletterLead> {
