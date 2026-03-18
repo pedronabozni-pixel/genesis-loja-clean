@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { FavoriteButton } from "@/components/store/favorite-button";
 import { CheckoutButton } from "@/components/store/hotmart-button";
 import { ProductCard } from "@/components/store/product-card";
+import { ProductVideoPreview } from "@/components/store/product-video-preview";
 import { ProductViewTracker } from "@/components/store/product-view-tracker";
 import { StarRating } from "@/components/store/star-rating";
 import { getProductBySlug, getProducts } from "@/lib/store-data";
@@ -48,13 +49,16 @@ export default async function ProductPage({ params }: Props) {
       <section className="grid gap-8 md:grid-cols-2">
         <div className="space-y-4">
           <div className="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-3">
-            <img alt={product.name} className="h-[430px] w-full rounded-xl object-cover" src={product.image} />
+            <img
+              alt={product.name}
+              className="h-[430px] w-full rounded-xl object-cover"
+              decoding="async"
+              fetchPriority="high"
+              src={product.image}
+            />
           </div>
           {product.videoUrl ? (
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-3">
-              <p className="mb-2 text-sm font-medium text-zinc-300">Vídeo do produto</p>
-              <video className="w-full rounded-xl" controls preload="metadata" src={product.videoUrl} />
-            </div>
+            <ProductVideoPreview image={product.image} productName={product.name} videoUrl={product.videoUrl} />
           ) : null}
         </div>
 
