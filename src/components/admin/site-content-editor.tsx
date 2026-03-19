@@ -23,7 +23,7 @@ function SectionCard({
             <p className="mt-1 text-sm text-zinc-400">{description}</p>
           </div>
           <span className="rounded-full border border-zinc-700 px-3 py-1 text-xs uppercase tracking-[0.2em] text-zinc-400">
-            Abrir
+            Expandir
           </span>
         </div>
       </summary>
