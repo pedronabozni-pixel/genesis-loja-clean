@@ -24,6 +24,7 @@ export async function PUT(request: Request) {
   revalidatePath("/");
   revalidatePath("/sobre");
   revalidatePath("/contato");
+  revalidatePath("/admin-loja/conteudo");
 
   return NextResponse.json({ siteContent: saved });
 }

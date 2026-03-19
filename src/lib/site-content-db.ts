@@ -100,8 +100,9 @@ export async function getSiteContentFromStore() {
 }
 
 export async function updateSiteContentInStore(payload: SiteContent) {
+  await fs.writeFile(siteContentJsonPath, JSON.stringify(payload, null, 2), "utf8");
+
   if (!isDatabaseConfigured()) {
-    await fs.writeFile(siteContentJsonPath, JSON.stringify(payload, null, 2), "utf8");
     return payload;
   }
 
