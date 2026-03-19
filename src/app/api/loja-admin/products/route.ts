@@ -62,6 +62,7 @@ export async function POST(request: Request) {
 
   revalidatePath("/");
   revalidatePath("/favoritos");
+  revalidatePath(`/produtos/${created.slug}`);
 
   return NextResponse.json({ product: created });
 }

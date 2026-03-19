@@ -4,7 +4,7 @@ import { ProductCard } from "@/components/store/product-card";
 import { SocialProof } from "@/components/store/social-proof";
 import { getProducts, getSiteContent } from "@/lib/store-data";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export default async function StoreHomePage() {
   const products = await getProducts();

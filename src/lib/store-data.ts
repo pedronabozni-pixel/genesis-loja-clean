@@ -2,6 +2,7 @@ import { promises as fs } from "fs";
 import path from "path";
 import type { NewsletterLead, Product, SiteContent } from "@/types/store";
 import { saveNewsletterLeadToDb } from "@/lib/newsletter-db";
+import { getSiteContentFromStore, updateSiteContentInStore } from "@/lib/site-content-db";
 import {
   createProductInStore,
   deleteProductFromStore,
@@ -37,13 +38,11 @@ export async function saveNewsletterLead(email: string): Promise<NewsletterLead>
 }
 
 export async function getSiteContent(): Promise<SiteContent> {
-  const data = await fs.readFile(siteContentPath, "utf8");
-  return JSON.parse(data) as SiteContent;
+  return getSiteContentFromStore();
 }
 
 export async function updateSiteContent(payload: SiteContent): Promise<SiteContent> {
-  await fs.writeFile(siteContentPath, JSON.stringify(payload, null, 2), "utf8");
-  return payload;
+  return updateSiteContentInStore(payload);
 }
 
 export function formatPrice(priceCents: number) {

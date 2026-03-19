@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: "Sobre"
 };
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export default async function AboutPage() {
   const siteContent = await getSiteContent();

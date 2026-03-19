@@ -1,7 +1,7 @@
 import { FavoriteGrid } from "@/components/store/favorite-grid";
 import { getProducts } from "@/lib/store-data";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export default async function FavoritesPage() {
   const products = await getProducts();
