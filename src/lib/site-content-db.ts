@@ -8,6 +8,14 @@ const siteContentJsonPath = path.join(process.cwd(), "src/data/site-content.json
 let pool: Pool | null = null;
 let initialized = false;
 
+function isDatabaseConnectionError(error: unknown) {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  return /ENOTFOUND|ECONNREFUSED|DATABASE_URL|postgres\.railway\.internal/i.test(error.message);
+}
+
 function isDatabaseConfigured() {
   return Boolean(process.env.DATABASE_URL);
 }
@@ -70,33 +78,41 @@ export async function getSiteContentFromStore() {
     return readSiteContentJson();
   }
 
-  await initializeSiteContentTable();
-  const db = getPool();
-  const result = await db.query<{ payload: SiteContent }>(
-    `
-      SELECT payload
-      FROM store_site_content
-      WHERE id = 1
-      LIMIT 1
-    `
-  );
-
-  const row = result.rows[0];
-
-  if (!row) {
-    const payload = await readSiteContentJson();
-    await db.query(
+  try {
+    await initializeSiteContentTable();
+    const db = getPool();
+    const result = await db.query<{ payload: SiteContent }>(
       `
-        INSERT INTO store_site_content (id, payload)
-        VALUES (1, $1::jsonb)
-        ON CONFLICT (id) DO NOTHING
-      `,
-      [JSON.stringify(payload)]
+        SELECT payload
+        FROM store_site_content
+        WHERE id = 1
+        LIMIT 1
+      `
     );
-    return payload;
-  }
 
-  return row.payload;
+    const row = result.rows[0];
+
+    if (!row) {
+      const payload = await readSiteContentJson();
+      await db.query(
+        `
+          INSERT INTO store_site_content (id, payload)
+          VALUES (1, $1::jsonb)
+          ON CONFLICT (id) DO NOTHING
+        `,
+        [JSON.stringify(payload)]
+      );
+      return payload;
+    }
+
+    return row.payload;
+  } catch (error) {
+    if (isDatabaseConnectionError(error)) {
+      return readSiteContentJson();
+    }
+
+    throw error;
+  }
 }
 
 export async function updateSiteContentInStore(payload: SiteContent) {

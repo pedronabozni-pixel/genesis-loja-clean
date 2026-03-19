@@ -8,6 +8,14 @@ const productsJsonPath = path.join(process.cwd(), "src/data/products.json");
 let pool: Pool | null = null;
 let initialized = false;
 
+function isDatabaseConnectionError(error: unknown) {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  return /ENOTFOUND|ECONNREFUSED|DATABASE_URL|postgres\.railway\.internal/i.test(error.message);
+}
+
 function isDatabaseConfigured() {
   return Boolean(process.env.DATABASE_URL);
 }
@@ -175,10 +183,18 @@ export async function getProductsFromStore() {
     return readProductsJson();
   }
 
-  await initializeProductsTable();
-  const db = getPool();
-  const result = await db.query<ProductRow>("SELECT * FROM store_products ORDER BY id ASC");
-  return result.rows.map(rowToProduct);
+  try {
+    await initializeProductsTable();
+    const db = getPool();
+    const result = await db.query<ProductRow>("SELECT * FROM store_products ORDER BY id ASC");
+    return result.rows.map(rowToProduct);
+  } catch (error) {
+    if (isDatabaseConnectionError(error)) {
+      return readProductsJson();
+    }
+
+    throw error;
+  }
 }
 
 export async function getProductBySlugFromStore(slug: string) {
@@ -187,11 +203,20 @@ export async function getProductBySlugFromStore(slug: string) {
     return products.find((product) => product.slug === slug);
   }
 
-  await initializeProductsTable();
-  const db = getPool();
-  const result = await db.query<ProductRow>("SELECT * FROM store_products WHERE slug = $1 LIMIT 1", [slug]);
-  const row = result.rows[0];
-  return row ? rowToProduct(row) : undefined;
+  try {
+    await initializeProductsTable();
+    const db = getPool();
+    const result = await db.query<ProductRow>("SELECT * FROM store_products WHERE slug = $1 LIMIT 1", [slug]);
+    const row = result.rows[0];
+    return row ? rowToProduct(row) : undefined;
+  } catch (error) {
+    if (isDatabaseConnectionError(error)) {
+      const products = await readProductsJson();
+      return products.find((product) => product.slug === slug);
+    }
+
+    throw error;
+  }
 }
 
 export async function updateProductInStore(slug: string, payload: Product) {
