@@ -1,18 +1,24 @@
 import Link from "next/link";
 import { formatMoney } from "@/lib/utils";
-import type { Product } from "@/types/store";
+import type { Product, SiteContent } from "@/types/store";
 import { CheckoutButton } from "@/components/store/hotmart-button";
 import { ScarcityCountdown } from "@/components/store/scarcity-countdown";
 import { StarRating } from "@/components/store/star-rating";
 
-export function HeroAnchor({ product }: { product: Product }) {
+export function HeroAnchor({
+  product,
+  content
+}: {
+  product: Product;
+  content: SiteContent["home"]["hero"];
+}) {
   return (
     <section className="relative overflow-hidden rounded-3xl border border-amber-500/30 bg-gradient-to-br from-zinc-900 via-zinc-950 to-zinc-900 p-6 md:p-10">
       <div className="absolute -right-12 -top-20 h-64 w-64 rounded-full bg-amber-400/20 blur-3xl" />
       <div className="grid items-center gap-8 md:grid-cols-2">
         <div className="space-y-5">
           <p className="inline-flex rounded-full border border-amber-400/50 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-amber-300">
-            Produto Mais Vendido
+            {content.badge}
           </p>
           <h1 className="font-serif text-4xl leading-tight text-zinc-100 md:text-5xl">{product.name}</h1>
           <StarRating rating={product.rating} reviewsCount={product.reviewsCount} />
@@ -22,16 +28,16 @@ export function HeroAnchor({ product }: { product: Product }) {
               {product.stockHint}
             </p>
           ) : null}
-          <ScarcityCountdown />
+          <ScarcityCountdown content={content} />
           <div className="flex flex-wrap items-center gap-3">
             <CheckoutButton
               className="rounded-xl bg-amber-400 px-6 py-3 text-sm font-bold uppercase tracking-wide text-zinc-950 transition hover:scale-[1.02] hover:bg-amber-300"
               href={product.checkoutUrl}
-              label={`Comprar Agora - ${formatMoney(product.priceCents)}`}
+              label={`${content.checkoutButtonPrefix} - ${formatMoney(product.priceCents)}`}
               productName={product.name}
             />
             <Link className="rounded-xl border border-zinc-700 px-6 py-3 text-sm font-semibold text-zinc-200" href={`/produtos/${product.slug}`}>
-              Ver detalhes
+              {content.secondaryButtonLabel}
             </Link>
           </div>
         </div>

@@ -15,12 +15,13 @@ export async function PUT(request: Request) {
 
   const payload = (await request.json()) as SiteContent;
 
-  if (!payload?.about || !payload?.contact) {
+  if (!payload?.home || !payload?.about || !payload?.contact) {
     return NextResponse.json({ message: "Conteúdo inválido." }, { status: 400 });
   }
 
   const saved = await updateSiteContent(payload);
 
+  revalidatePath("/");
   revalidatePath("/sobre");
   revalidatePath("/contato");
 

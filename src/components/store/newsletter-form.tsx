@@ -1,8 +1,9 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import type { SiteContent } from "@/types/store";
 
-export function NewsletterForm() {
+export function NewsletterForm({ content }: { content: SiteContent["home"]["newsletter"] }) {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -13,7 +14,7 @@ export function NewsletterForm() {
     const email = String(formData.get("email") ?? "").trim();
 
     if (!email) {
-      setMessage("Informe um e-mail válido.");
+      setMessage(content.invalidEmailMessage);
       return;
     }
 
@@ -30,23 +31,23 @@ export function NewsletterForm() {
     setLoading(false);
 
     if (!response.ok) {
-      setMessage(data.message ?? "Não foi possível cadastrar agora.");
+      setMessage(data.message ?? content.genericErrorMessage);
       return;
     }
 
     form.reset();
-    setMessage("Pronto. Você entrou para a lista VIP.");
+    setMessage(content.successMessage);
   }
 
   return (
     <section className="rounded-3xl border border-zinc-800 bg-zinc-900/70 p-6">
-      <p className="text-xs uppercase tracking-[0.2em] text-amber-300">Oferta exclusiva</p>
-      <h3 className="mt-2 font-serif text-2xl text-zinc-100">Receba cupons e novos lançamentos</h3>
+      <p className="text-xs uppercase tracking-[0.2em] text-amber-300">{content.eyebrow}</p>
+      <h3 className="mt-2 font-serif text-2xl text-zinc-100">{content.title}</h3>
       <form className="mt-4 flex flex-col gap-3 md:flex-row" onSubmit={onSubmit}>
         <input
           className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-sm text-zinc-100 outline-none focus:border-amber-400"
           name="email"
-          placeholder="Seu melhor e-mail"
+          placeholder={content.placeholder}
           type="email"
         />
         <button
@@ -54,7 +55,7 @@ export function NewsletterForm() {
           disabled={loading}
           type="submit"
         >
-          {loading ? "Enviando..." : "Quero Desconto"}
+          {loading ? content.loadingLabel : content.buttonLabel}
         </button>
       </form>
       {message ? <p className="mt-3 text-sm text-zinc-300">{message}</p> : null}

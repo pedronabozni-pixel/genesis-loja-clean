@@ -33,6 +33,436 @@ export function SiteContentEditor({ initialSiteContent }: { initialSiteContent: 
       <h2 className="font-serif text-2xl text-zinc-100">Conteúdo do site</h2>
 
       <div className="grid gap-3 md:grid-cols-2">
+        <label className="text-sm text-zinc-300">
+          Home - selo do hero
+          <input
+            className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-zinc-100"
+            onChange={(event) =>
+              setSiteContent((current) => ({ ...current, home: { ...current.home, hero: { ...current.home.hero, badge: event.target.value } } }))
+            }
+            value={siteContent.home.hero.badge}
+          />
+        </label>
+
+        <label className="text-sm text-zinc-300">
+          Home - botão principal do hero
+          <input
+            className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-zinc-100"
+            onChange={(event) =>
+              setSiteContent((current) => ({
+                ...current,
+                home: { ...current.home, hero: { ...current.home.hero, checkoutButtonPrefix: event.target.value } }
+              }))
+            }
+            value={siteContent.home.hero.checkoutButtonPrefix}
+          />
+        </label>
+
+        <label className="text-sm text-zinc-300">
+          Home - botão secundário do hero
+          <input
+            className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-zinc-100"
+            onChange={(event) =>
+              setSiteContent((current) => ({
+                ...current,
+                home: { ...current.home, hero: { ...current.home.hero, secondaryButtonLabel: event.target.value } }
+              }))
+            }
+            value={siteContent.home.hero.secondaryButtonLabel}
+          />
+        </label>
+
+        <label className="text-sm text-zinc-300">
+          Home - texto de espera do contador
+          <input
+            className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-zinc-100"
+            onChange={(event) =>
+              setSiteContent((current) => ({
+                ...current,
+                home: { ...current.home, hero: { ...current.home.hero, countdownLoadingText: event.target.value } }
+              }))
+            }
+            value={siteContent.home.hero.countdownLoadingText}
+          />
+        </label>
+
+        <label className="text-sm text-zinc-300">
+          Home - prefixo do contador
+          <input
+            className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-zinc-100"
+            onChange={(event) =>
+              setSiteContent((current) => ({
+                ...current,
+                home: { ...current.home, hero: { ...current.home.hero, countdownPrefix: event.target.value } }
+              }))
+            }
+            value={siteContent.home.hero.countdownPrefix}
+          />
+        </label>
+
+        <label className="text-sm text-zinc-300 md:col-span-2">
+          Home - título da seção de produtos
+          <input
+            className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-zinc-100"
+            onChange={(event) => setSiteContent((current) => ({ ...current, home: { ...current.home, featuredProductsTitle: event.target.value } }))}
+            value={siteContent.home.featuredProductsTitle}
+          />
+        </label>
+
+        <label className="text-sm text-zinc-300 md:col-span-2">
+          Home - botão dos cards de produto
+          <input
+            className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-zinc-100"
+            onChange={(event) =>
+              setSiteContent((current) => ({ ...current, home: { ...current.home, productCardButtonLabel: event.target.value } }))
+            }
+            value={siteContent.home.productCardButtonLabel}
+          />
+        </label>
+
+        {siteContent.home.infoCards.map((card, index) => (
+          <div className="grid gap-3 rounded-xl border border-zinc-800 bg-zinc-950/50 p-3 md:col-span-2 md:grid-cols-2" key={`${card.title}-${index}`}>
+            <label className="text-sm text-zinc-300">
+              Home - card {index + 1} título
+              <input
+                className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-zinc-100"
+                onChange={(event) =>
+                  setSiteContent((current) => ({
+                    ...current,
+                    home: {
+                      ...current.home,
+                      infoCards: current.home.infoCards.map((item, itemIndex) =>
+                        itemIndex === index ? { ...item, title: event.target.value } : item
+                      )
+                    }
+                  }))
+                }
+                value={card.title}
+              />
+            </label>
+
+            <label className="text-sm text-zinc-300">
+              Home - card {index + 1} texto
+              <input
+                className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-zinc-100"
+                onChange={(event) =>
+                  setSiteContent((current) => ({
+                    ...current,
+                    home: {
+                      ...current.home,
+                      infoCards: current.home.infoCards.map((item, itemIndex) =>
+                        itemIndex === index ? { ...item, text: event.target.value } : item
+                      )
+                    }
+                  }))
+                }
+                value={card.text}
+              />
+            </label>
+          </div>
+        ))}
+
+        <label className="text-sm text-zinc-300">
+          Prova social - selo
+          <input
+            className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-zinc-100"
+            onChange={(event) =>
+              setSiteContent((current) => ({
+                ...current,
+                home: { ...current.home, socialProof: { ...current.home.socialProof, eyebrow: event.target.value } }
+              }))
+            }
+            value={siteContent.home.socialProof.eyebrow}
+          />
+        </label>
+
+        <label className="text-sm text-zinc-300">
+          Prova social - título
+          <input
+            className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-zinc-100"
+            onChange={(event) =>
+              setSiteContent((current) => ({
+                ...current,
+                home: { ...current.home, socialProof: { ...current.home.socialProof, title: event.target.value } }
+              }))
+            }
+            value={siteContent.home.socialProof.title}
+          />
+        </label>
+
+        {siteContent.home.socialProof.testimonials.map((testimonial, index) => (
+          <div className="grid gap-3 rounded-xl border border-zinc-800 bg-zinc-950/50 p-3 md:col-span-2 md:grid-cols-3" key={`${testimonial.name}-${index}`}>
+            <label className="text-sm text-zinc-300">
+              Avaliação {index + 1} - nome
+              <input
+                className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-zinc-100"
+                onChange={(event) =>
+                  setSiteContent((current) => ({
+                    ...current,
+                    home: {
+                      ...current.home,
+                      socialProof: {
+                        ...current.home.socialProof,
+                        testimonials: current.home.socialProof.testimonials.map((item, itemIndex) =>
+                          itemIndex === index ? { ...item, name: event.target.value } : item
+                        )
+                      }
+                    }
+                  }))
+                }
+                value={testimonial.name}
+              />
+            </label>
+
+            <label className="text-sm text-zinc-300 md:col-span-2">
+              Avaliação {index + 1} - texto
+              <input
+                className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-zinc-100"
+                onChange={(event) =>
+                  setSiteContent((current) => ({
+                    ...current,
+                    home: {
+                      ...current.home,
+                      socialProof: {
+                        ...current.home.socialProof,
+                        testimonials: current.home.socialProof.testimonials.map((item, itemIndex) =>
+                          itemIndex === index ? { ...item, text: event.target.value } : item
+                        )
+                      }
+                    }
+                  }))
+                }
+                value={testimonial.text}
+              />
+            </label>
+
+            <label className="text-sm text-zinc-300">
+              Avaliação {index + 1} - estrelas
+              <input
+                className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-zinc-100"
+                max={5}
+                min={1}
+                onChange={(event) =>
+                  setSiteContent((current) => ({
+                    ...current,
+                    home: {
+                      ...current.home,
+                      socialProof: {
+                        ...current.home.socialProof,
+                        testimonials: current.home.socialProof.testimonials.map((item, itemIndex) =>
+                          itemIndex === index ? { ...item, stars: Number(event.target.value) || 5 } : item
+                        )
+                      }
+                    }
+                  }))
+                }
+                type="number"
+                value={testimonial.stars}
+              />
+            </label>
+          </div>
+        ))}
+
+        <label className="text-sm text-zinc-300">
+          Newsletter - selo
+          <input
+            className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-zinc-100"
+            onChange={(event) =>
+              setSiteContent((current) => ({
+                ...current,
+                home: { ...current.home, newsletter: { ...current.home.newsletter, eyebrow: event.target.value } }
+              }))
+            }
+            value={siteContent.home.newsletter.eyebrow}
+          />
+        </label>
+
+        <label className="text-sm text-zinc-300">
+          Newsletter - título
+          <input
+            className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-zinc-100"
+            onChange={(event) =>
+              setSiteContent((current) => ({
+                ...current,
+                home: { ...current.home, newsletter: { ...current.home.newsletter, title: event.target.value } }
+              }))
+            }
+            value={siteContent.home.newsletter.title}
+          />
+        </label>
+
+        <label className="text-sm text-zinc-300">
+          Newsletter - placeholder
+          <input
+            className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-zinc-100"
+            onChange={(event) =>
+              setSiteContent((current) => ({
+                ...current,
+                home: { ...current.home, newsletter: { ...current.home.newsletter, placeholder: event.target.value } }
+              }))
+            }
+            value={siteContent.home.newsletter.placeholder}
+          />
+        </label>
+
+        <label className="text-sm text-zinc-300">
+          Newsletter - texto do botão
+          <input
+            className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-zinc-100"
+            onChange={(event) =>
+              setSiteContent((current) => ({
+                ...current,
+                home: { ...current.home, newsletter: { ...current.home.newsletter, buttonLabel: event.target.value } }
+              }))
+            }
+            value={siteContent.home.newsletter.buttonLabel}
+          />
+        </label>
+
+        <label className="text-sm text-zinc-300">
+          Newsletter - texto carregando
+          <input
+            className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-zinc-100"
+            onChange={(event) =>
+              setSiteContent((current) => ({
+                ...current,
+                home: { ...current.home, newsletter: { ...current.home.newsletter, loadingLabel: event.target.value } }
+              }))
+            }
+            value={siteContent.home.newsletter.loadingLabel}
+          />
+        </label>
+
+        <label className="text-sm text-zinc-300">
+          Newsletter - mensagem de e-mail inválido
+          <input
+            className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-zinc-100"
+            onChange={(event) =>
+              setSiteContent((current) => ({
+                ...current,
+                home: {
+                  ...current.home,
+                  newsletter: { ...current.home.newsletter, invalidEmailMessage: event.target.value }
+                }
+              }))
+            }
+            value={siteContent.home.newsletter.invalidEmailMessage}
+          />
+        </label>
+
+        <label className="text-sm text-zinc-300">
+          Newsletter - mensagem de erro
+          <input
+            className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-zinc-100"
+            onChange={(event) =>
+              setSiteContent((current) => ({
+                ...current,
+                home: {
+                  ...current.home,
+                  newsletter: { ...current.home.newsletter, genericErrorMessage: event.target.value }
+                }
+              }))
+            }
+            value={siteContent.home.newsletter.genericErrorMessage}
+          />
+        </label>
+
+        <label className="text-sm text-zinc-300 md:col-span-2">
+          Newsletter - mensagem de sucesso
+          <input
+            className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-zinc-100"
+            onChange={(event) =>
+              setSiteContent((current) => ({
+                ...current,
+                home: { ...current.home, newsletter: { ...current.home.newsletter, successMessage: event.target.value } }
+              }))
+            }
+            value={siteContent.home.newsletter.successMessage}
+          />
+        </label>
+
+        <label className="text-sm text-zinc-300">
+          Página de produto - título se não encontrar
+          <input
+            className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-zinc-100"
+            onChange={(event) =>
+              setSiteContent((current) => ({
+                ...current,
+                home: {
+                  ...current.home,
+                  productPage: { ...current.home.productPage, notFoundTitle: event.target.value }
+                }
+              }))
+            }
+            value={siteContent.home.productPage.notFoundTitle}
+          />
+        </label>
+
+        <label className="text-sm text-zinc-300">
+          Página de produto - sufixo do SEO
+          <input
+            className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-zinc-100"
+            onChange={(event) =>
+              setSiteContent((current) => ({
+                ...current,
+                home: {
+                  ...current.home,
+                  productPage: { ...current.home.productPage, metadataTitleSuffix: event.target.value }
+                }
+              }))
+            }
+            value={siteContent.home.productPage.metadataTitleSuffix}
+          />
+        </label>
+
+        <label className="text-sm text-zinc-300">
+          Página de produto - selo
+          <input
+            className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-zinc-100"
+            onChange={(event) =>
+              setSiteContent((current) => ({
+                ...current,
+                home: { ...current.home, productPage: { ...current.home.productPage, badge: event.target.value } }
+              }))
+            }
+            value={siteContent.home.productPage.badge}
+          />
+        </label>
+
+        <label className="text-sm text-zinc-300">
+          Página de produto - botão comprar
+          <input
+            className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-zinc-100"
+            onChange={(event) =>
+              setSiteContent((current) => ({
+                ...current,
+                home: {
+                  ...current.home,
+                  productPage: { ...current.home.productPage, checkoutButtonLabel: event.target.value }
+                }
+              }))
+            }
+            value={siteContent.home.productPage.checkoutButtonLabel}
+          />
+        </label>
+
+        <label className="text-sm text-zinc-300 md:col-span-2">
+          Página de produto - título dos relacionados
+          <input
+            className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-zinc-100"
+            onChange={(event) =>
+              setSiteContent((current) => ({
+                ...current,
+                home: {
+                  ...current.home,
+                  productPage: { ...current.home.productPage, relatedProductsTitle: event.target.value }
+                }
+              }))
+            }
+            value={siteContent.home.productPage.relatedProductsTitle}
+          />
+        </label>
+
         <label className="text-sm text-zinc-300 md:col-span-2">
           Título da página Sobre
           <input

@@ -1,4 +1,67 @@
 {
+  "home": {
+    "hero": {
+      "badge": "Produto Mais Vendido",
+      "checkoutButtonPrefix": "Comprar Agora",
+      "secondaryButtonLabel": "Ver detalhes",
+      "countdownLoadingText": "Oferta de hoje com tempo limitado",
+      "countdownPrefix": "Oferta de hoje termina em"
+    },
+    "infoCards": [
+      {
+        "title": "Escassez visual",
+        "text": "Lotes promocionais com unidades limitadas."
+      },
+      {
+        "title": "Entrega rápida",
+        "text": "Vendas para todo o Brasil"
+      },
+      {
+        "title": "Compra segura",
+        "text": "Checkout seguro via Stripe para maior confiança."
+      }
+    ],
+    "featuredProductsTitle": "Produtos em destaque",
+    "productCardButtonLabel": "Ver detalhes",
+    "socialProof": {
+      "eyebrow": "Prova social",
+      "title": "Clientes satisfeitos em todo Brasil",
+      "testimonials": [
+        {
+          "name": "Rafael M.",
+          "text": "Comprei o H12 Ultra SE e chegou rápido. Acabamento premium mesmo.",
+          "stars": 5
+        },
+        {
+          "name": "Carla P.",
+          "text": "A loja passa muita confiança. Atendimento claro e compra simples.",
+          "stars": 5
+        },
+        {
+          "name": "Diego S.",
+          "text": "Produtos com qualidade acima da média para a faixa de preço.",
+          "stars": 5
+        }
+      ]
+    },
+    "newsletter": {
+      "eyebrow": "Oferta exclusiva",
+      "title": "Receba cupons e novos lançamentos",
+      "placeholder": "Seu melhor e-mail",
+      "buttonLabel": "Quero Desconto",
+      "loadingLabel": "Enviando...",
+      "invalidEmailMessage": "Informe um e-mail válido.",
+      "genericErrorMessage": "Não foi possível cadastrar agora.",
+      "successMessage": "Pronto. Você entrou para a lista VIP."
+    },
+    "productPage": {
+      "notFoundTitle": "Produto não encontrado",
+      "metadataTitleSuffix": "Comprar Agora",
+      "badge": "Oferta de hoje",
+      "checkoutButtonLabel": "Compre agora",
+      "relatedProductsTitle": "Você também pode gostar"
+    }
+  },
   "about": {
     "title": "Sobre a Genesis Distribuidora",
     "paragraph1": "A Genesis Distribuidora é uma loja online de tecnologia focada em oferecer produtos práticos e acessíveis para o dia a dia. Trabalhamos com uma curadoria de itens que realmente fazem diferença — áudio, energia, bem-estar e gadgets — sempre buscando o melhor custo-benefício para quem quer tecnologia sem complicação.",

@@ -6,7 +6,7 @@ import { ProductCard } from "@/components/store/product-card";
 import { ProductVideoPreview } from "@/components/store/product-video-preview";
 import { ProductViewTracker } from "@/components/store/product-view-tracker";
 import { StarRating } from "@/components/store/star-rating";
-import { getProductBySlug, getProducts } from "@/lib/store-data";
+import { getProductBySlug, getProducts, getSiteContent } from "@/lib/store-data";
 import { formatMoney } from "@/lib/utils";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -16,13 +16,14 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const product = await getProductBySlug(slug);
+  const siteContent = await getSiteContent();
 
   if (!product) {
-    return { title: "Produto não encontrado" };
+    return { title: siteContent.home.productPage.notFoundTitle };
   }
 
   return {
-    title: `${product.name} - Comprar Agora`,
+    title: `${product.name} - ${siteContent.home.productPage.metadataTitleSuffix}`,
     description: product.shortDescription,
     openGraph: {
       title: product.name,
@@ -41,6 +42,7 @@ export default async function ProductPage({ params }: Props) {
   }
 
   const products = await getProducts();
+  const siteContent = await getSiteContent();
   const related = products.filter((item) => item.slug !== product.slug).slice(0, 3);
 
   return (
@@ -63,7 +65,7 @@ export default async function ProductPage({ params }: Props) {
         </div>
 
         <div className="space-y-4">
-          <p className="inline-flex rounded-full border border-amber-500/50 px-3 py-1 text-xs text-amber-300">Oferta de hoje</p>
+          <p className="inline-flex rounded-full border border-amber-500/50 px-3 py-1 text-xs text-amber-300">{siteContent.home.productPage.badge}</p>
           <p className="text-xs uppercase tracking-[0.2em] text-zinc-400">{product.category}</p>
           <h1 className="font-serif text-4xl">{product.name}</h1>
           <StarRating rating={product.rating} reviewsCount={product.reviewsCount} />
@@ -87,7 +89,7 @@ export default async function ProductPage({ params }: Props) {
             <CheckoutButton
               className="rounded-xl bg-amber-400 px-6 py-3 text-sm font-bold uppercase tracking-wide text-zinc-950 transition hover:scale-[1.02] hover:bg-amber-300"
               href={product.checkoutUrl}
-              label="Compre agora"
+              label={siteContent.home.productPage.checkoutButtonLabel}
               productName={product.name}
             />
             <FavoriteButton slug={product.slug} />
@@ -96,10 +98,10 @@ export default async function ProductPage({ params }: Props) {
       </section>
 
       <section className="space-y-4">
-        <h2 className="font-serif text-2xl">Você também pode gostar</h2>
+        <h2 className="font-serif text-2xl">{siteContent.home.productPage.relatedProductsTitle}</h2>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {related.map((item) => (
-            <ProductCard key={item.id} product={item} />
+            <ProductCard key={item.id} buttonLabel={siteContent.home.productCardButtonLabel} product={item} />
           ))}
         </div>
       </section>

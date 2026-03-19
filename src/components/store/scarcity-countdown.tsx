@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import type { SiteContent } from "@/types/store";
 
 function getSecondsUntilEndOfDay() {
   const now = new Date();
@@ -13,7 +14,7 @@ function pad(value: number) {
   return String(value).padStart(2, "0");
 }
 
-export function ScarcityCountdown() {
+export function ScarcityCountdown({ content }: { content: SiteContent["home"]["hero"] }) {
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
 
   useEffect(() => {
@@ -29,7 +30,7 @@ export function ScarcityCountdown() {
   if (secondsLeft === null) {
     return (
       <p className="rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-2 text-sm font-medium text-amber-200">
-        Oferta de hoje com tempo limitado
+        {content.countdownLoadingText}
       </p>
     );
   }
@@ -40,7 +41,7 @@ export function ScarcityCountdown() {
 
   return (
     <p className="rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-2 text-sm font-medium text-amber-200">
-      Oferta de hoje termina em {pad(hours)}:{pad(minutes)}:{pad(seconds)}
+      {content.countdownPrefix} {pad(hours)}:{pad(minutes)}:{pad(seconds)}
     </p>
   );
 }

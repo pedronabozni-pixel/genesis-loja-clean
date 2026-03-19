@@ -2,11 +2,17 @@
 
 import Link from "next/link";
 import { formatMoney } from "@/lib/utils";
-import type { Product } from "@/types/store";
+import type { Product, SiteContent } from "@/types/store";
 import { FavoriteButton } from "@/components/store/favorite-button";
 import { StarRating } from "@/components/store/star-rating";
 
-export function ProductCard({ product }: { product: Product }) {
+export function ProductCard({
+  product,
+  buttonLabel = "Ver detalhes"
+}: {
+  product: Product;
+  buttonLabel?: SiteContent["home"]["productCardButtonLabel"];
+}) {
   return (
     <article className="group rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4 transition hover:-translate-y-1 hover:border-amber-500/70">
       <div className="overflow-hidden rounded-xl border border-zinc-800">
@@ -33,7 +39,7 @@ export function ProductCard({ product }: { product: Product }) {
             className="rounded-lg bg-amber-400 px-3 py-2 text-sm font-semibold text-zinc-950 transition hover:bg-amber-300"
             href={`/produtos/${product.slug}`}
           >
-            Ver detalhes
+            {buttonLabel}
           </Link>
         </div>
       </div>
