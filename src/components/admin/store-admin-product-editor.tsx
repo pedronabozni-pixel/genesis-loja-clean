@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { Product } from "@/types/store";
+import { isEmbeddableVideoUrl } from "@/lib/video";
 
 type Message = { slug: string; text: string } | null;
 
@@ -40,6 +41,13 @@ export function StoreAdminProductEditor({
   const [uploadingImageSlug, setUploadingImageSlug] = useState<string | null>(null);
   const [uploadingVideoSlug, setUploadingVideoSlug] = useState<string | null>(null);
 
+  function handleUnauthorized(slug: string) {
+    setMessage({ slug, text: "Sua sessão expirou. Faça login novamente para continuar." });
+    window.setTimeout(() => {
+      window.location.href = loginPath;
+    }, 1200);
+  }
+
   async function saveProduct(product: Product) {
     setSavingSlug(product.slug);
     const response = await fetch(`/api/loja-admin/products/${product.slug}`, {
@@ -51,6 +59,11 @@ export function StoreAdminProductEditor({
     setSavingSlug(null);
 
     const data = (await response.json()) as { message?: string };
+
+    if (response.status === 401) {
+      handleUnauthorized(product.slug);
+      return;
+    }
 
     if (!response.ok) {
       setMessage({ slug: product.slug, text: data.message ?? "Falha ao salvar." });
@@ -101,6 +114,11 @@ export function StoreAdminProductEditor({
 
     const data = (await response.json()) as { product?: Product; message?: string };
 
+    if (response.status === 401) {
+      handleUnauthorized("global");
+      return;
+    }
+
     if (!response.ok || !data.product) {
       setMessage({ slug: "global", text: data.message ?? "Falha ao adicionar produto." });
       return;
@@ -132,6 +150,11 @@ export function StoreAdminProductEditor({
     }
 
     if (!response.ok) {
+      if (response.status === 401) {
+        handleUnauthorized(slug);
+        return;
+      }
+
       setMessage({ slug, text: data.message ?? `Falha ao excluir produto (HTTP ${response.status}).` });
       return;
     }
@@ -155,6 +178,11 @@ export function StoreAdminProductEditor({
     setUploadingImageSlug(null);
 
     const data = (await response.json()) as { imageUrl?: string; message?: string };
+
+    if (response.status === 401) {
+      handleUnauthorized(slug);
+      return;
+    }
 
     if (!response.ok || !data.imageUrl) {
       setMessage({ slug, text: data.message ?? "Falha no upload da imagem." });
@@ -180,6 +208,11 @@ export function StoreAdminProductEditor({
     setUploadingVideoSlug(null);
 
     const data = (await response.json()) as { videoUrl?: string; message?: string };
+
+    if (response.status === 401) {
+      handleUnauthorized(slug);
+      return;
+    }
 
     if (!response.ok || !data.videoUrl) {
       setMessage({ slug, text: data.message ?? "Falha no upload do vídeo." });
@@ -301,7 +334,7 @@ export function StoreAdminProductEditor({
               <input
                 className="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-zinc-100"
                 onChange={(event) => updateField(index, "videoUrl", event.target.value)}
-                placeholder="https://... ou /uploads/store/arquivo.mp4"
+                placeholder="https://youtube.com/... ou /uploads/store/arquivo.mp4"
                 value={product.videoUrl ?? ""}
               />
               <input
@@ -313,7 +346,7 @@ export function StoreAdminProductEditor({
               <span className="block text-xs text-zinc-400">
                 {uploadingVideoSlug === product.slug
                   ? "Enviando vídeo..."
-                  : "Você pode colar a URL ou enviar um arquivo. Formatos: MP4, WEBM, OGG e MOV."}
+                  : "Você pode colar a URL do YouTube ou enviar um arquivo. Formatos de upload: MP4, WEBM, OGG e MOV."}
               </span>
             </div>
 
@@ -349,6 +382,13 @@ export function StoreAdminProductEditor({
             Margem bruta estimada: R$ {((product.priceCents - product.costCents) / 100).toFixed(2)}
           </p>
           <p className="text-sm text-zinc-400">Vídeo atual: {getMediaLabel(product.videoUrl)}</p>
+          {product.videoUrl ? (
+            <p className="text-xs text-zinc-500">
+              {isEmbeddableVideoUrl(product.videoUrl)
+                ? "Link detectado como vídeo incorporado."
+                : "Se for YouTube, cole o link completo do vídeo para incorporar corretamente."}
+            </p>
+          ) : null}
           {message?.slug === product.slug ? <p className="text-sm text-zinc-300">{message.text}</p> : null}
         </article>
       ))}

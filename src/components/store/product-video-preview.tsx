@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { getYouTubeEmbedUrl } from "@/lib/video";
 
 type Props = {
   image: string;
@@ -10,19 +11,33 @@ type Props = {
 
 export function ProductVideoPreview({ image, productName, videoUrl }: Props) {
   const [showVideo, setShowVideo] = useState(false);
+  const embedUrl = getYouTubeEmbedUrl(videoUrl);
 
   return (
     <div className="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-3">
       <p className="mb-2 text-sm font-medium text-zinc-300">Vídeo do produto</p>
 
       {showVideo ? (
-        <video
-          className="w-full rounded-xl"
-          controls
-          playsInline
-          preload="metadata"
-          src={videoUrl}
-        />
+        embedUrl ? (
+          <div className="overflow-hidden rounded-xl">
+            <iframe
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+              className="aspect-video w-full"
+              referrerPolicy="strict-origin-when-cross-origin"
+              src={embedUrl}
+              title={`Vídeo de ${productName}`}
+            />
+          </div>
+        ) : (
+          <video
+            className="w-full rounded-xl"
+            controls
+            playsInline
+            preload="metadata"
+            src={videoUrl}
+          />
+        )
       ) : (
         <div className="relative overflow-hidden rounded-xl">
           <img
