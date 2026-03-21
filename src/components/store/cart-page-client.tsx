@@ -56,9 +56,10 @@ export function CartPageClient({ products }: { products: Product[] }) {
                   </div>
 
                   <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 rounded-full border border-zinc-700 bg-zinc-950/70 p-1">
                       <button
-                        className="h-9 w-9 rounded-lg border border-zinc-700 text-lg text-zinc-200"
+                        aria-label={`Diminuir quantidade de ${product.name}`}
+                        className="h-9 w-9 rounded-full border border-zinc-700 text-lg text-zinc-200 transition hover:border-amber-400 hover:text-amber-300"
                         onClick={() => setQuantity(product.id, quantity - 1)}
                         type="button"
                       >
@@ -66,7 +67,8 @@ export function CartPageClient({ products }: { products: Product[] }) {
                       </button>
                       <span className="min-w-10 text-center text-sm font-semibold">{quantity}</span>
                       <button
-                        className="h-9 w-9 rounded-lg border border-zinc-700 text-lg text-zinc-200"
+                        aria-label={`Aumentar quantidade de ${product.name}`}
+                        className="h-9 w-9 rounded-full border border-zinc-700 text-lg text-zinc-200 transition hover:border-amber-400 hover:text-amber-300"
                         onClick={() => setQuantity(product.id, quantity + 1)}
                         type="button"
                       >
@@ -111,6 +113,7 @@ export function CartPageClient({ products }: { products: Product[] }) {
         </div>
 
         <p className="mt-3 text-sm text-zinc-400">No checkout da Stripe, o cliente verá todos os itens selecionados em uma única compra.</p>
+        <p className="mt-2 rounded-xl border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-sm text-amber-200">Pagamento seguro, com itens agrupados e confirmação automática do pedido.</p>
 
         <CartCheckoutButton className="mt-5 w-full rounded-xl bg-amber-400 px-5 py-3 font-bold text-zinc-950 transition hover:bg-amber-300 disabled:opacity-60" />
 

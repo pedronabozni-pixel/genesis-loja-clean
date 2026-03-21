@@ -62,7 +62,11 @@ export async function POST(request: Request) {
       success_url: `${appUrl}/checkout/sucesso?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${appUrl}/carrinho`,
       locale: "pt-BR",
-      allow_promotion_codes: true
+      allow_promotion_codes: true,
+      metadata: {
+        source: "genesis_store",
+        item_count: String(body.items.length)
+      }
     });
 
     return NextResponse.json({ url: session.url });
