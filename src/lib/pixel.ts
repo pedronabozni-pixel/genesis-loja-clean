@@ -1,4 +1,4 @@
-export type PixelEvent = "ViewContent" | "AddToWishlist" | "InitiateCheckout" | "Lead";
+export type PixelEvent = "ViewContent" | "AddToCart" | "AddToWishlist" | "InitiateCheckout" | "Lead";
 
 export function trackPixelEvent(event: PixelEvent, payload?: Record<string, string | number>) {
   // Estrutura pronta para plugar Meta Pixel ou TikTok Pixel no futuro.

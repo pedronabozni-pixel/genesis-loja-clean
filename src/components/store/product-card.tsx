@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { AddToCartButton } from "@/components/store/add-to-cart-button";
 import { formatMoney } from "@/lib/utils";
 import type { Product, SiteContent } from "@/types/store";
 import { FavoriteButton } from "@/components/store/favorite-button";
@@ -33,14 +34,21 @@ export function ProductCard({
         <StarRating rating={product.rating} reviewsCount={product.reviewsCount} />
         <p className="text-sm text-zinc-300">{product.shortDescription}</p>
 
-        <div className="flex items-center justify-between">
+        <div className="space-y-3">
           <p className="text-xl font-bold text-amber-300">{formatMoney(product.priceCents)}</p>
-          <Link
-            className="rounded-lg bg-amber-400 px-3 py-2 text-sm font-semibold text-zinc-950 transition hover:bg-amber-300"
-            href={`/produtos/${product.slug}`}
-          >
-            {buttonLabel}
-          </Link>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <Link
+              className="rounded-lg bg-amber-400 px-3 py-2 text-center text-sm font-semibold text-zinc-950 transition hover:bg-amber-300"
+              href={`/produtos/${product.slug}`}
+            >
+              {buttonLabel}
+            </Link>
+            <AddToCartButton
+              className="rounded-lg border border-zinc-700 px-3 py-2 text-sm font-semibold text-zinc-100 transition hover:border-amber-400 hover:text-amber-300"
+              productId={product.id}
+              productName={product.name}
+            />
+          </div>
         </div>
       </div>
     </article>

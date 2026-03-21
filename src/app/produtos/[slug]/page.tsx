@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { AddToCartButton } from "@/components/store/add-to-cart-button";
 import { FavoriteButton } from "@/components/store/favorite-button";
 import { CheckoutButton } from "@/components/store/hotmart-button";
 import { ProductCard } from "@/components/store/product-card";
@@ -90,6 +91,11 @@ export default async function ProductPage({ params }: Props) {
               className="rounded-xl bg-amber-400 px-6 py-3 text-sm font-bold uppercase tracking-wide text-zinc-950 transition hover:scale-[1.02] hover:bg-amber-300"
               href={product.checkoutUrl}
               label={siteContent.home.productPage.checkoutButtonLabel}
+              productName={product.name}
+            />
+            <AddToCartButton
+              className="rounded-xl border border-zinc-700 px-6 py-3 text-sm font-semibold text-zinc-200 transition hover:border-amber-400 hover:text-amber-300"
+              productId={product.id}
               productName={product.name}
             />
             <FavoriteButton slug={product.slug} />
