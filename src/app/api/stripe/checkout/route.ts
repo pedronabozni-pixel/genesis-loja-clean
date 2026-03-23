@@ -12,16 +12,26 @@ const bodySchema = z.object({
   items: z.array(itemSchema).min(1)
 });
 
+function getAppOrigin() {
+  const rawAppUrl = process.env.NEXT_PUBLIC_APP_URL?.trim();
+
+  if (!rawAppUrl) {
+    throw new Error("NEXT_PUBLIC_APP_URL não configurada.");
+  }
+
+  try {
+    return new URL(rawAppUrl).origin;
+  } catch {
+    throw new Error("NEXT_PUBLIC_APP_URL inválida. Use uma URL completa, por exemplo https://genesisecom.com.br");
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const rawBody = await request.json();
     const body = bodySchema.parse(rawBody);
     const products = await getProducts();
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL;
-
-    if (!appUrl) {
-      return NextResponse.json({ message: "NEXT_PUBLIC_APP_URL não configurada." }, { status: 500 });
-    }
+    const appOrigin = getAppOrigin();
 
     const lineItems = body.items.map((item) => {
       const product = products.find((entry) => entry.id === item.productId);
@@ -33,7 +43,7 @@ export async function POST(request: Request) {
       const imageUrl = product.image
         ? product.image.startsWith("http")
           ? product.image
-          : `${appUrl}${product.image}`
+          : new URL(product.image, appOrigin).toString()
         : undefined;
 
       return {
@@ -59,8 +69,8 @@ export async function POST(request: Request) {
       mode: "payment",
       line_items: lineItems,
       billing_address_collection: "auto",
-      success_url: `${appUrl}/checkout/sucesso?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${appUrl}/carrinho`,
+      success_url: new URL("/checkout/sucesso?session_id={CHECKOUT_SESSION_ID}", appOrigin).toString(),
+      cancel_url: new URL("/carrinho", appOrigin).toString(),
       locale: "pt-BR",
       allow_promotion_codes: true,
       metadata: {
