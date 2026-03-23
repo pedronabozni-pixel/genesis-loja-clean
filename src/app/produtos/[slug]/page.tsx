@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { AddToCartButton } from "@/components/store/add-to-cart-button";
-import { FavoriteButton } from "@/components/store/favorite-button";
 import { CheckoutButton } from "@/components/store/hotmart-button";
 import { ProductCard } from "@/components/store/product-card";
 import { ProductVideoPreview } from "@/components/store/product-video-preview";
@@ -98,7 +97,6 @@ export default async function ProductPage({ params }: Props) {
               productId={product.id}
               productName={product.name}
             />
-            <FavoriteButton slug={product.slug} />
           </div>
         </div>
       </section>

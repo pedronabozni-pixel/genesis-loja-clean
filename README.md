@@ -71,7 +71,6 @@ Mesmo com a integracao ativa, a loja continua salvando uma copia local do lead c
 
 - `/`
 - `/produtos/[slug]`
-- `/favoritos`
 - `/sobre`
 - `/contato`
 - `/admin-loja`

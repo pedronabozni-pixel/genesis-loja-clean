@@ -61,7 +61,6 @@ export async function POST(request: Request) {
   const created = await createProduct(product);
 
   revalidatePath("/");
-  revalidatePath("/favoritos");
   revalidatePath(`/produtos/${created.slug}`);
 
   return NextResponse.json({ product: created });

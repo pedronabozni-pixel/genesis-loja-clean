@@ -4,7 +4,6 @@ import Link from "next/link";
 import { AddToCartButton } from "@/components/store/add-to-cart-button";
 import { formatMoney } from "@/lib/utils";
 import type { Product, SiteContent } from "@/types/store";
-import { FavoriteButton } from "@/components/store/favorite-button";
 import { StarRating } from "@/components/store/star-rating";
 
 export function ProductCard({
@@ -28,8 +27,7 @@ export function ProductCard({
         <p className="text-xs uppercase tracking-wider text-amber-300">{product.category}</p>
         <div className="flex items-start justify-between gap-3">
           <h3 className="text-lg font-semibold text-zinc-100">{product.name}</h3>
-          <FavoriteButton slug={product.slug} />
-        </div>
+          </div>
 
         <StarRating rating={product.rating} reviewsCount={product.reviewsCount} />
         <p className="text-sm text-zinc-300">{product.shortDescription}</p>

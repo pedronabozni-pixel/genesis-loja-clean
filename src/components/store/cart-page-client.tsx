@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { CartCheckoutButton } from "@/components/store/cart-checkout-button";
 import { mapCartItems, useCart } from "@/components/store/cart-provider";
-import { FavoriteButton } from "@/components/store/favorite-button";
 import { formatMoney } from "@/lib/utils";
 import type { Product } from "@/types/store";
 
@@ -52,8 +51,7 @@ export function CartPageClient({ products }: { products: Product[] }) {
                       <h2 className="text-xl font-semibold">{product.name}</h2>
                       <p className="text-sm text-zinc-300">{product.shortDescription}</p>
                     </div>
-                    <FavoriteButton slug={product.slug} />
-                  </div>
+                      </div>
 
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="flex items-center gap-2 rounded-full border border-zinc-700 bg-zinc-950/70 p-1">

@@ -4,7 +4,6 @@ import { CartLink } from "@/components/store/cart-link";
 
 const links = [
   { href: "/", label: "Home" },
-  { href: "/favoritos", label: "Favoritos" },
   { href: "/sobre", label: "Sobre" },
   { href: "/contato", label: "Contato" }
 ];

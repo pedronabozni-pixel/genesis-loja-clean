@@ -26,7 +26,6 @@ export async function POST(request: Request) {
   }
 
   revalidatePath("/");
-  revalidatePath("/favoritos");
   revalidatePath(`/produtos/${slug}`);
 
   return NextResponse.json({ ok: true });
