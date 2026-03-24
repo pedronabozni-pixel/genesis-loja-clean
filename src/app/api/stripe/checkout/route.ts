@@ -5,7 +5,7 @@ import { getStripeServer } from "@/lib/stripe";
 
 const itemSchema = z.object({
   productId: z.string().min(1),
-  quantity: z.number().int().min(1).max(20)
+  quantity: z.number().int().min(1).max(99)
 });
 
 const bodySchema = z.object({

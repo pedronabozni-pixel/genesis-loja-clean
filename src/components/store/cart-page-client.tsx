@@ -17,7 +17,7 @@ export function CartPageClient({ products }: { products: Product[] }) {
         <div className="rounded-3xl border border-zinc-800 bg-zinc-900/60 p-8 text-center">
           <p className="text-sm uppercase tracking-[0.2em] text-amber-300">Carrinho vazio</p>
           <h1 className="mt-3 font-serif text-4xl">Seu carrinho ainda está vazio</h1>
-          <p className="mt-3 text-zinc-300">Adicione produtos para montar um checkout único na Stripe com tudo o que o cliente escolheu.</p>
+          <p className="mt-3 text-zinc-300">Adicione produtos para continuar com a compra em uma única etapa.</p>
           <Link className="mt-6 inline-flex rounded-xl bg-amber-400 px-5 py-3 font-semibold text-zinc-950" href="/">
             Voltar para a loja
           </Link>
@@ -66,7 +66,8 @@ export function CartPageClient({ products }: { products: Product[] }) {
                       <span className="min-w-10 text-center text-sm font-semibold">{quantity}</span>
                       <button
                         aria-label={`Aumentar quantidade de ${product.name}`}
-                        className="h-9 w-9 rounded-full border border-zinc-700 text-lg text-zinc-200 transition hover:border-amber-400 hover:text-amber-300"
+                        className="h-9 w-9 rounded-full border border-zinc-700 text-lg text-zinc-200 transition hover:border-amber-400 hover:text-amber-300 disabled:cursor-not-allowed disabled:opacity-40"
+                        disabled={quantity >= 99}
                         onClick={() => setQuantity(product.id, quantity + 1)}
                         type="button"
                       >
@@ -109,9 +110,6 @@ export function CartPageClient({ products }: { products: Product[] }) {
           <span className="text-zinc-300">Total</span>
           <span className="text-2xl font-bold text-amber-300">{formatMoney(total)}</span>
         </div>
-
-        <p className="mt-3 text-sm text-zinc-400">No checkout da Stripe, o cliente verá todos os itens selecionados em uma única compra.</p>
-        <p className="mt-2 rounded-xl border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-sm text-amber-200">Pagamento seguro, com itens agrupados e confirmação automática do pedido.</p>
 
         <CartCheckoutButton className="mt-5 w-full rounded-xl bg-amber-400 px-5 py-3 font-bold text-zinc-950 transition hover:bg-amber-300 disabled:opacity-60" />
 

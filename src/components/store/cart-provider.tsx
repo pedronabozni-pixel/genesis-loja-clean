@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import type { Product } from "@/types/store";
 
 const CART_STORAGE_KEY = "genesis_store_cart";
+const MAX_CART_ITEM_QUANTITY = 99;
 
 export type CartItem = {
   productId: string;
@@ -36,7 +37,12 @@ function readCart() {
     }
 
     const parsed = JSON.parse(stored) as CartItem[];
-    return parsed.filter((item) => item.productId && item.quantity > 0);
+    return parsed
+      .filter((item) => item.productId && item.quantity > 0)
+      .map((item) => ({
+        ...item,
+        quantity: Math.min(item.quantity, MAX_CART_ITEM_QUANTITY)
+      }));
   } catch {
     return [];
   }
@@ -64,11 +70,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
         if (existing) {
           return current.map((item) =>
-            item.productId === productId ? { ...item, quantity: item.quantity + quantity } : item
+            item.productId === productId
+              ? { ...item, quantity: Math.min(item.quantity + quantity, MAX_CART_ITEM_QUANTITY) }
+              : item
           );
         }
 
-        return [...current, { productId, quantity }];
+        return [...current, { productId, quantity: Math.min(quantity, MAX_CART_ITEM_QUANTITY) }];
       });
     }
 
@@ -83,7 +91,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         }
 
         return current.map((item) =>
-          item.productId === productId ? { ...item, quantity } : item
+          item.productId === productId
+            ? { ...item, quantity: Math.min(quantity, MAX_CART_ITEM_QUANTITY) }
+            : item
         );
       });
     }

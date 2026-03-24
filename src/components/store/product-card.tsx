@@ -36,13 +36,13 @@ export function ProductCard({
           <p className="text-xl font-bold text-amber-300">{formatMoney(product.priceCents)}</p>
           <div className="grid gap-2 sm:grid-cols-2">
             <Link
-              className="rounded-lg bg-amber-400 px-3 py-2 text-center text-sm font-semibold text-zinc-950 transition hover:bg-amber-300"
+              className="flex min-h-14 items-center justify-center rounded-lg bg-amber-400 px-3 py-2 text-center text-sm font-semibold leading-tight text-zinc-950 transition hover:bg-amber-300"
               href={`/produtos/${product.slug}`}
             >
               {buttonLabel}
             </Link>
             <AddToCartButton
-              className="rounded-lg border border-zinc-700 px-3 py-2 text-sm font-semibold text-zinc-100 transition hover:border-amber-400 hover:text-amber-300"
+              className="flex min-h-14 items-center justify-center rounded-lg border border-zinc-700 px-3 py-2 text-center text-sm font-semibold leading-tight text-zinc-100 transition hover:border-amber-400 hover:text-amber-300"
               productId={product.id}
               productName={product.name}
             />
