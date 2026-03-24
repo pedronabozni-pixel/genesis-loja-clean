@@ -10,6 +10,10 @@ export function CartPageClient({ products }: { products: Product[] }) {
   const { items, removeItem, setQuantity, clearCart } = useCart();
   const entries = mapCartItems(products, items);
   const total = entries.reduce((sum, entry) => sum + entry.product.priceCents * entry.quantity, 0);
+  const checkoutItems = entries.map(({ product, quantity }) => ({
+    productId: product.id,
+    quantity: Math.min(quantity, 99)
+  }));
 
   if (entries.length === 0) {
     return (
@@ -111,7 +115,10 @@ export function CartPageClient({ products }: { products: Product[] }) {
           <span className="text-2xl font-bold text-amber-300">{formatMoney(total)}</span>
         </div>
 
-        <CartCheckoutButton className="mt-5 w-full rounded-xl bg-amber-400 px-5 py-3 font-bold text-zinc-950 transition hover:bg-amber-300 disabled:opacity-60" />
+        <CartCheckoutButton
+          className="mt-5 w-full rounded-xl bg-amber-400 px-5 py-3 font-bold text-zinc-950 transition hover:bg-amber-300 disabled:opacity-60"
+          items={checkoutItems}
+        />
 
         <Link className="mt-3 inline-flex w-full justify-center rounded-xl border border-zinc-700 px-5 py-3 text-sm font-semibold text-zinc-200" href="/">
           Continuar comprando

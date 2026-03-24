@@ -1,14 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { useCart } from "@/components/store/cart-provider";
+
+type CheckoutItem = {
+  productId: string;
+  quantity: number;
+};
 
 type Props = {
   className?: string;
+  items: CheckoutItem[];
 };
 
-export function CartCheckoutButton({ className = "" }: Props) {
-  const { items } = useCart();
+export function CartCheckoutButton({ className = "", items }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 

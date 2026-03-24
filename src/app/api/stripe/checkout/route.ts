@@ -32,12 +32,18 @@ export async function POST(request: Request) {
     const body = bodySchema.parse(rawBody);
     const products = await getProducts();
     const appOrigin = getAppOrigin();
+    const normalizedItems = new Map<string, number>();
 
-    const lineItems = body.items.map((item) => {
-      const product = products.find((entry) => entry.id === item.productId);
+    for (const item of body.items) {
+      const currentQuantity = normalizedItems.get(item.productId) ?? 0;
+      normalizedItems.set(item.productId, Math.min(currentQuantity + item.quantity, 99));
+    }
+
+    const lineItems = Array.from(normalizedItems.entries()).flatMap(([productId, quantity]) => {
+      const product = products.find((entry) => entry.id === productId);
 
       if (!product) {
-        throw new Error("Produto inválido no carrinho.");
+        return [];
       }
 
       const imageUrl = product.image
@@ -46,23 +52,32 @@ export async function POST(request: Request) {
           : new URL(product.image, appOrigin).toString()
         : undefined;
 
-      return {
-        quantity: item.quantity,
-        price_data: {
-          currency: "brl",
-          unit_amount: product.priceCents,
-          product_data: {
-            name: product.name,
-            description: product.shortDescription,
-            images: imageUrl ? [imageUrl] : undefined,
-            metadata: {
-              product_id: product.id,
-              product_slug: product.slug
+      return [
+        {
+          quantity,
+          price_data: {
+            currency: "brl",
+            unit_amount: product.priceCents,
+            product_data: {
+              name: product.name,
+              description: product.shortDescription,
+              images: imageUrl ? [imageUrl] : undefined,
+              metadata: {
+                product_id: product.id,
+                product_slug: product.slug
+              }
             }
           }
         }
-      };
+      ];
     });
+
+    if (lineItems.length === 0) {
+      return NextResponse.json(
+        { message: "Seu carrinho foi atualizado. Revise os itens e tente novamente." },
+        { status: 400 }
+      );
+    }
 
     const stripe = getStripeServer();
     const session = await stripe.checkout.sessions.create({
@@ -75,14 +90,17 @@ export async function POST(request: Request) {
       allow_promotion_codes: true,
       metadata: {
         source: "genesis_store",
-        item_count: String(body.items.length)
+        item_count: String(lineItems.length)
       }
     });
 
     return NextResponse.json({ url: session.url });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ message: "Carrinho inválido." }, { status: 400 });
+    return NextResponse.json(
+      { message: "Seu carrinho foi atualizado. Revise os itens e tente novamente." },
+      { status: 400 }
+    );
     }
 
     const message = error instanceof Error ? error.message : "Falha ao iniciar checkout.";
