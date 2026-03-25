@@ -22,3 +22,11 @@ export function formatMoney(cents: number) {
     currency: "BRL"
   }).format(cents / 100);
 }
+
+export function getOriginalPriceCentsFromDiscounted(
+  discountedCents: number,
+  discountRate = 0.3
+) {
+  const factor = 1 - discountRate;
+  return Math.round(discountedCents / factor);
+}

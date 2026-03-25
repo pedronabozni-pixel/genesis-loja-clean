@@ -7,13 +7,16 @@ export function StoreFooter() {
         <p>Genesis Distribuidora © {new Date().getFullYear()} - Tecnologia premium com entrega nacional.</p>
         <div className="flex flex-col gap-3 md:items-end">
           <a
-            className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-zinc-900 px-3 py-2 text-xs font-semibold text-zinc-100 transition hover:border-emerald-400/60 hover:text-emerald-200"
+            className="inline-flex overflow-hidden rounded-2xl border border-zinc-200/70 bg-white shadow-[0_12px_30px_rgba(0,0,0,0.18)] transition hover:scale-[1.01]"
             href="https://www.reclameaqui.com.br/"
             rel="noreferrer"
             target="_blank"
           >
-            <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
-            Selo de segurança Reclame AQUI
+            <img
+              alt="Selo Verificada por Reclame AQUI"
+              className="h-auto w-[220px] md:w-[260px]"
+              src="/brand/reclame-aqui-verificada.svg"
+            />
           </a>
           <div className="flex gap-4">
           <Link className="hover:text-amber-300" href="/sobre">

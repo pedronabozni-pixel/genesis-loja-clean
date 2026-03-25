@@ -5,7 +5,6 @@ import { CheckoutButton } from "@/components/store/hotmart-button";
 import { ProductCard } from "@/components/store/product-card";
 import { ProductVideoPreview } from "@/components/store/product-video-preview";
 import { ProductViewTracker } from "@/components/store/product-view-tracker";
-import { StarRating } from "@/components/store/star-rating";
 import { getProductBySlug, getProducts, getSiteContent } from "@/lib/store-data";
 import { formatMoney } from "@/lib/utils";
 
@@ -68,7 +67,6 @@ export default async function ProductPage({ params }: Props) {
           <p className="inline-flex rounded-full border border-amber-500/50 px-3 py-1 text-xs text-amber-300">{siteContent.home.productPage.badge}</p>
           <p className="text-xs uppercase tracking-[0.2em] text-zinc-400">{product.category}</p>
           <h1 className="font-serif text-4xl">{product.name}</h1>
-          <StarRating rating={product.rating} reviewsCount={product.reviewsCount} />
           <p className="text-zinc-300">{product.description}</p>
 
           <ul className="space-y-2">

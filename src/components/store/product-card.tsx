@@ -2,9 +2,8 @@
 
 import Link from "next/link";
 import { AddToCartButton } from "@/components/store/add-to-cart-button";
-import { formatMoney } from "@/lib/utils";
+import { formatMoney, getOriginalPriceCentsFromDiscounted } from "@/lib/utils";
 import type { Product, SiteContent } from "@/types/store";
-import { StarRating } from "@/components/store/star-rating";
 
 export function ProductCard({
   product,
@@ -13,6 +12,8 @@ export function ProductCard({
   product: Product;
   buttonLabel?: SiteContent["home"]["productCardButtonLabel"];
 }) {
+  const originalPriceCents = getOriginalPriceCentsFromDiscounted(product.priceCents);
+
   return (
     <article className="group rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4 transition hover:-translate-y-1 hover:border-amber-500/70">
       <div className="overflow-hidden rounded-xl border border-zinc-800">
@@ -27,13 +28,19 @@ export function ProductCard({
         <p className="text-xs uppercase tracking-wider text-amber-300">{product.category}</p>
         <div className="flex items-start justify-between gap-3">
           <h3 className="text-lg font-semibold text-zinc-100">{product.name}</h3>
-          </div>
-
-        <StarRating rating={product.rating} reviewsCount={product.reviewsCount} />
+        </div>
         <p className="text-sm text-zinc-300">{product.shortDescription}</p>
 
         <div className="space-y-3">
-          <p className="text-xl font-bold text-amber-300">{formatMoney(product.priceCents)}</p>
+          <div className="space-y-1">
+            <p className="text-xs font-medium uppercase tracking-[0.2em] text-amber-200/80">
+              Lancamento com 30% off
+            </p>
+            <p className="text-sm text-zinc-500 line-through">
+              {formatMoney(originalPriceCents)}
+            </p>
+            <p className="text-xl font-bold text-amber-300">{formatMoney(product.priceCents)}</p>
+          </div>
           <div className="grid gap-2 sm:grid-cols-2">
             <Link
               className="flex min-h-14 items-center justify-center rounded-lg bg-amber-400 px-3 py-2 text-center text-sm font-semibold leading-tight text-zinc-950 transition hover:bg-amber-300"

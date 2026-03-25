@@ -3,7 +3,6 @@ import { formatMoney } from "@/lib/utils";
 import type { Product, SiteContent } from "@/types/store";
 import { CheckoutButton } from "@/components/store/hotmart-button";
 import { ScarcityCountdown } from "@/components/store/scarcity-countdown";
-import { StarRating } from "@/components/store/star-rating";
 
 export function HeroAnchor({
   product,
@@ -21,7 +20,6 @@ export function HeroAnchor({
             {content.badge}
           </p>
           <h1 className="font-serif text-4xl leading-tight text-zinc-100 md:text-5xl">{product.name}</h1>
-          <StarRating rating={product.rating} reviewsCount={product.reviewsCount} />
           <p className="max-w-xl text-zinc-300">{product.description}</p>
           {product.stockHint ? (
             <p className="rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-2 text-sm font-medium text-amber-200">

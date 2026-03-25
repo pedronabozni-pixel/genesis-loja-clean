@@ -1,0 +1,10 @@
+<svg width="767" height="205" viewBox="0 0 767 205" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="18" y="12" width="731" height="181" rx="16" fill="#FAFAFA" stroke="#E7E7E7" stroke-width="4"/>
+  <path d="M16 12H124V193H16C7.16344 193 0 185.837 0 177V28C0 19.1634 7.16344 12 16 12Z" fill="#0FA37F"/>
+  <circle cx="114" cy="102" r="66" fill="#C0E42D"/>
+  <circle cx="114" cy="102" r="61" fill="#A8D61D" stroke="#91C214" stroke-width="4"/>
+  <path d="M87 101.5L107.5 122L147 80.5" stroke="white" stroke-width="19" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="214" y="86" fill="#4F5560" font-family="Arial, Helvetica, sans-serif" font-size="54" font-weight="500">Verificada por</text>
+  <text x="214" y="145" fill="#9AD31D" font-family="Arial, Helvetica, sans-serif" font-size="72" font-style="italic" font-weight="800">Reclame</text>
+  <text x="468" y="145" fill="#009D68" font-family="Arial, Helvetica, sans-serif" font-size="72" font-weight="900">AQUI</text>
+</svg>
