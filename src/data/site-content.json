@@ -1,7 +1,9 @@
 {
   "home": {
     "hero": {
-      "badge": "Produto Mais Vendido",
+      "badge": "Mural da Genesis",
+      "title": "Semana de lançamento: 30% OFF em todo o site",
+      "description": "Aproveite condições especiais na nossa primeira semana e garanta seus produtos com desconto por tempo limitado.",
       "checkoutButtonPrefix": "Comprar Agora",
       "secondaryButtonLabel": "Ver detalhes",
       "countdownLoadingText": "Oferta de hoje com tempo limitado",

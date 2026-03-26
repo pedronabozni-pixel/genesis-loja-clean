@@ -27,6 +27,8 @@ export type SiteContent = {
   home: {
     hero: {
       badge: string;
+      title: string;
+      description: string;
       checkoutButtonPrefix: string;
       secondaryButtonLabel: string;
       countdownLoadingText: string;

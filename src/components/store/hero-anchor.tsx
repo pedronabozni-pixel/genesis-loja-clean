@@ -19,8 +19,8 @@ export function HeroAnchor({
           <p className="inline-flex rounded-full border border-amber-400/50 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-amber-300">
             {content.badge}
           </p>
-          <h1 className="font-serif text-4xl leading-tight text-zinc-100 md:text-5xl">{product.name}</h1>
-          <p className="max-w-xl text-zinc-300">{product.description}</p>
+          <h1 className="font-serif text-4xl leading-tight text-zinc-100 md:text-5xl">{content.title}</h1>
+          <p className="max-w-xl text-zinc-300">{content.description}</p>
           {product.stockHint ? (
             <p className="rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-2 text-sm font-medium text-amber-200">
               {product.stockHint}

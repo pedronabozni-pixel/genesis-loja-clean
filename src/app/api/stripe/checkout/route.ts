@@ -82,8 +82,15 @@ export async function POST(request: Request) {
     const stripe = getStripeServer();
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
+      payment_method_types: ["card", "pix"],
       line_items: lineItems,
-      billing_address_collection: "auto",
+      billing_address_collection: "required",
+      shipping_address_collection: {
+        allowed_countries: ["BR"]
+      },
+      phone_number_collection: {
+        enabled: true
+      },
       success_url: new URL("/checkout/sucesso?session_id={CHECKOUT_SESSION_ID}", appOrigin).toString(),
       cancel_url: new URL("/carrinho", appOrigin).toString(),
       locale: "pt-BR",
