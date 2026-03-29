@@ -63,8 +63,13 @@ export function CartCheckoutButton({ className = "", items }: Props) {
 
   return (
     <div className="space-y-2">
+      <p className="rounded-xl border border-zinc-700 bg-zinc-950/60 px-4 py-3 text-center text-sm text-zinc-300">
+        💬 Pagamento via <strong className="text-amber-300">PIX</strong>? Fale conosco pelo{" "}
+        <strong className="text-amber-300">WhatsApp</strong>.<br />
+        💳 Pagamento com <strong className="text-amber-300">cartão</strong> direto pelo site abaixo.
+      </p>
       <button className={className} disabled={loading || items.length === 0} onClick={handleCheckout} type="button">
-        {loading ? "Redirecionando..." : "Finalizar compra com Stripe"}
+        {loading ? "Abrindo checkout..." : "Finalizar compra com cartão"}
       </button>
       {error ? <p className="text-sm text-red-300">{error}</p> : null}
     </div>
