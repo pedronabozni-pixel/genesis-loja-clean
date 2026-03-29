@@ -82,7 +82,14 @@ export async function POST(request: Request) {
     const stripe = getStripeServer();
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
-      payment_method_types: ["card", "pix"],
+      payment_method_types: ["card"],
+      payment_method_options: {
+        card: {
+          installments: {
+            enabled: true
+          }
+        }
+      },
       line_items: lineItems,
       billing_address_collection: "required",
       shipping_address_collection: {
@@ -104,10 +111,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ url: session.url });
   } catch (error) {
     if (error instanceof z.ZodError) {
-    return NextResponse.json(
-      { message: "Seu carrinho foi atualizado. Revise os itens e tente novamente." },
-      { status: 400 }
-    );
+      return NextResponse.json(
+        { message: "Seu carrinho foi atualizado. Revise os itens e tente novamente." },
+        { status: 400 }
+      );
     }
 
     const message = error instanceof Error ? error.message : "Falha ao iniciar checkout.";
