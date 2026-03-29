@@ -1,8 +1,4 @@
-import Link from "next/link";
-import { formatMoney } from "@/lib/utils";
 import type { Product, SiteContent } from "@/types/store";
-import { CheckoutButton } from "@/components/store/hotmart-button";
-import { ScarcityCountdown } from "@/components/store/scarcity-countdown";
 
 export function HeroAnchor({
   product,
@@ -28,23 +24,6 @@ export function HeroAnchor({
         <p className="mx-auto max-w-xl text-zinc-400 md:text-lg">
           {content.description}
         </p>
-
-        <ScarcityCountdown content={content} />
-
-        <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-          <CheckoutButton
-            className="rounded-xl bg-amber-400 px-8 py-3 text-sm font-bold uppercase tracking-wide text-zinc-950 transition hover:scale-[1.02] hover:bg-amber-300"
-            href={product.checkoutUrl}
-            label={`${content.checkoutButtonPrefix} - ${formatMoney(product.priceCents)}`}
-            productName={product.name}
-          />
-          <Link
-            className="rounded-xl border border-zinc-700 px-6 py-3 text-sm font-semibold text-zinc-200 transition hover:border-amber-400/50"
-            href={`/produtos/${product.slug}`}
-          >
-            {content.secondaryButtonLabel}
-          </Link>
-        </div>
       </div>
     </section>
   );
