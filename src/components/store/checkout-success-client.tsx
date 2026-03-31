@@ -15,21 +15,29 @@ export function CheckoutSuccessClient() {
   }, [clearCart]);
 
   return (
-    <div className="rounded-3xl border border-zinc-800 bg-zinc-900/60 p-8 text-center">
-      <p className="text-sm uppercase tracking-[0.2em] text-amber-300">Pedido enviado</p>
-      <h1 className="mt-3 font-serif text-4xl">Checkout aberto com sucesso</h1>
-      <p className="mt-3 text-zinc-300">
-        Se o pagamento for concluído, vamos registrar seu pedido automaticamente pela Stripe. Você pode voltar para a loja ou continuar navegando.
+    <div className="rounded-3xl border border-amber-500/30 bg-gradient-to-br from-zinc-900 via-zinc-950 to-zinc-900 p-10 text-center">
+      <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full border border-amber-400/40 bg-amber-400/10 text-4xl">
+        ✅
+      </div>
+
+      <p className="text-sm uppercase tracking-[0.2em] text-amber-300">Compra confirmada</p>
+      <h1 className="mt-3 font-serif text-4xl text-zinc-100">Obrigado pelo seu pedido!</h1>
+      <p className="mx-auto mt-4 max-w-md text-zinc-300">
+        Seu pagamento foi processado com sucesso pela Stripe. Em breve você receberá um e-mail de confirmação com os detalhes do seu pedido.
       </p>
-      {sessionId ? (
-        <p className="mt-4 text-xs text-zinc-500">Sessão Stripe: {sessionId}</p>
-      ) : null}
-      <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-        <Link className="rounded-xl bg-amber-400 px-5 py-3 font-semibold text-zinc-950" href="/">
-          Voltar para a Home
+
+      <div className="mx-auto mt-6 max-w-sm rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5 text-left text-sm text-zinc-300 space-y-2">
+        <p>📦 <strong className="text-zinc-100">Envio nacional</strong> com rastreamento</p>
+        <p>📧 Confirmação enviada para o seu e-mail</p>
+        <p>💬 Dúvidas? Fale pelo <strong className="text-amber-300">WhatsApp</strong> ou em <strong className="text-amber-300">Contato</strong></p>
+      </div>
+
+      <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+        <Link className="rounded-xl bg-amber-400 px-6 py-3 font-semibold text-zinc-950 transition hover:bg-amber-300" href="/">
+          Voltar para a loja
         </Link>
-        <Link className="rounded-xl border border-zinc-700 px-5 py-3 font-semibold text-zinc-200" href="/produtos/h12-ultra-se">
-          Ver produto destaque
+        <Link className="rounded-xl border border-zinc-700 px-6 py-3 font-semibold text-zinc-200 transition hover:border-amber-400/50" href="/contato">
+          Falar com suporte
         </Link>
       </div>
     </div>
