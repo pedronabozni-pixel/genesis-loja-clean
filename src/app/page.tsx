@@ -1,7 +1,6 @@
 import { HeroAnchor } from "@/components/store/hero-anchor";
 import { NewsletterForm } from "@/components/store/newsletter-form";
 import { ProductCard } from "@/components/store/product-card";
-import { SocialProof } from "@/components/store/social-proof";
 import { getProducts, getSiteContent } from "@/lib/store-data";
 
 export const revalidate = 300;
@@ -35,9 +34,6 @@ export default async function StoreHomePage() {
         </div>
       </section>
 
-      <div className="animate-fade-up">
-        <SocialProof content={siteContent.home.socialProof} />
-      </div>
       <div className="animate-fade-up">
         <NewsletterForm content={siteContent.home.newsletter} />
       </div>
