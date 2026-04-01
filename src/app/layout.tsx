@@ -15,6 +15,9 @@ export const metadata: Metadata = {
     title: "Genesis Distribuidora",
     description: "Produtos de tecnologia com foco em alta conversão.",
     type: "website"
+  },
+  icons: {
+    icon: "/favicon.ico"
   }
 };
 
