@@ -8,7 +8,6 @@ import { useCart } from "@/components/store/cart-provider";
 export function CheckoutSuccessClient() {
   const params = useSearchParams();
   const { clearCart } = useCart();
-  const sessionId = params.get("session_id");
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -19,7 +18,7 @@ export function CheckoutSuccessClient() {
   if (!ready) {
     return (
       <div className="rounded-3xl border border-zinc-800 bg-zinc-900/60 p-8 text-center text-zinc-300">
-        Carregando confirmacao...
+        Carregando...
       </div>
     );
   }
@@ -37,4 +36,11 @@ export function CheckoutSuccessClient() {
       </p>
 
       <div className="mx-auto mt-6 max-w-sm rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5 text-left text-sm text-zinc-300 space-y-2">
-        <p>📦 <strong className="text-zinc-100">Envio nacional</strong> com rastr
+        <p>Envio nacional com rastreamento</p>
+        <p>Confirmacao enviada para o seu e-mail</p>
+        <p>Duvidas? Fale pelo WhatsApp</p>
+      </div>
+
+      <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+        <Link
+          className="rounded-xl bg-amber-400 px-6 py
