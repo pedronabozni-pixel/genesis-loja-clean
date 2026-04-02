@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useCart } from "@/components/store/cart-provider";
 
@@ -9,10 +9,20 @@ export function CheckoutSuccessClient() {
   const params = useSearchParams();
   const { clearCart } = useCart();
   const sessionId = params.get("session_id");
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     clearCart();
+    setReady(true);
   }, [clearCart]);
+
+  if (!ready) {
+    return (
+      <div className="rounded-3xl border border-zinc-800 bg-zinc-900/60 p-8 text-center text-zinc-300">
+        Carregando confirmação...
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-3xl border border-amber-500/30 bg-gradient-to-br from-zinc-900 via-zinc-950 to-zinc-900 p-10 text-center">
@@ -33,12 +43,20 @@ export function CheckoutSuccessClient() {
       </div>
 
       <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-        <Link className="rounded-xl bg-amber-400 px-6 py-3 font-semibold text-zinc-950 transition hover:bg-amber-300" href="/">
+        <Link
+          className="rounded-xl bg-amber-400 px-6 py-3 font-semibold text-zinc-950 transition hover:bg-amber-300"
+          href="/"
+        >
           Voltar para a loja
         </Link>
-        <Link className="rounded-xl border border-zinc-700 px-6 py-3 font-semibold text-zinc-200 transition hover:border-amber-400/50" href="/contato">
+        
+          className="rounded-xl border border-zinc-700 px-6 py-3 font-semibold text-zinc-200 transition hover:border-amber-400/50"
+          href="https://wa.me/5511922152213?text=Olá!%20Acabei%20de%20fazer%20uma%20compra%20e%20preciso%20de%20suporte."
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           Falar com suporte
-        </Link>
+        </a>
       </div>
     </div>
   );
