@@ -3,20 +3,11 @@ import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { ADMIN_CONFIG, ADMIN_COOKIE_NAME } from "@/lib/store-config";
 import { createProduct, getProducts } from "@/lib/store-data";
+import { slugify } from "@/lib/utils";
 import type { Product } from "@/types/store";
 
 function unauthorized() {
   return NextResponse.json({ message: "Não autorizado." }, { status: 401 });
-}
-
-function slugify(value: string) {
-  return value
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[^\w\s-]/g, "")
-    .trim()
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-");
 }
 
 export async function POST(request: Request) {
@@ -55,7 +46,12 @@ export async function POST(request: Request) {
     rating: Number(body.rating ?? 5),
     reviewsCount: Number(body.reviewsCount ?? 1),
     features: Array.isArray(body.features) ? body.features : ["Novo diferencial do produto"],
-    stockHint: String(body.stockHint ?? "")
+    stockHint: String(body.stockHint ?? ""),
+    stockQuantity:
+      typeof body.stockQuantity === "number" && Number.isFinite(body.stockQuantity)
+        ? Math.max(0, Math.trunc(body.stockQuantity))
+        : null,
+    colors: Array.isArray(body.colors) ? body.colors.map((color) => String(color).trim()).filter(Boolean) : []
   };
 
   const created = await createProduct(product);

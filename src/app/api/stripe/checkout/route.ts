@@ -5,7 +5,8 @@ import { getStripeServer } from "@/lib/stripe";
 
 const itemSchema = z.object({
   productId: z.string().min(1),
-  quantity: z.number().int().min(1).max(99)
+  quantity: z.number().int().min(1).max(99),
+  selectedColor: z.string().trim().min(1).optional()
 });
 
 const bodySchema = z.object({
@@ -32,14 +33,38 @@ export async function POST(request: Request) {
     const body = bodySchema.parse(rawBody);
     const products = await getProducts();
     const appOrigin = getAppOrigin();
-    const normalizedItems = new Map<string, number>();
+    const normalizedItems = new Map<string, { productId: string; quantity: number; selectedColor?: string }>();
 
     for (const item of body.items) {
-      const currentQuantity = normalizedItems.get(item.productId) ?? 0;
-      normalizedItems.set(item.productId, Math.min(currentQuantity + item.quantity, 99));
+      const key = `${item.productId}::${item.selectedColor ?? ""}`;
+      const currentEntry = normalizedItems.get(key);
+      const nextQuantity = Math.min((currentEntry?.quantity ?? 0) + item.quantity, 99);
+      normalizedItems.set(key, {
+        productId: item.productId,
+        quantity: nextQuantity,
+        selectedColor: item.selectedColor
+      });
     }
 
-    const lineItems = Array.from(normalizedItems.entries()).flatMap(([productId, quantity]) => {
+    const normalizedEntries = Array.from(normalizedItems.values());
+    const hasInvalidItems = normalizedEntries.some(({ productId, quantity }) => {
+      const product = products.find((entry) => entry.id === productId);
+
+      if (!product) {
+        return true;
+      }
+
+      return typeof product.stockQuantity === "number" && product.stockQuantity < quantity;
+    });
+
+    if (hasInvalidItems) {
+      return NextResponse.json(
+        { message: "Alguns itens ficaram sem estoque ou foram alterados. Revise o carrinho e tente novamente." },
+        { status: 400 }
+      );
+    }
+
+    const lineItems = normalizedEntries.flatMap(({ productId, quantity, selectedColor }) => {
       const product = products.find((entry) => entry.id === productId);
 
       if (!product) {
@@ -59,12 +84,13 @@ export async function POST(request: Request) {
             currency: "brl",
             unit_amount: product.priceCents,
             product_data: {
-              name: product.name,
+              name: selectedColor ? `${product.name} - ${selectedColor}` : product.name,
               description: product.shortDescription,
               images: imageUrl ? [imageUrl] : undefined,
               metadata: {
                 product_id: product.id,
-                product_slug: product.slug
+                product_slug: product.slug,
+                selected_color: selectedColor ?? ""
               }
             }
           }

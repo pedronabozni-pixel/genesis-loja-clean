@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { AddToCartButton } from "@/components/store/add-to-cart-button";
-import { formatMoney, getOriginalPriceCentsFromDiscounted } from "@/lib/utils";
+import { formatMoney, getOriginalPriceCentsFromDiscounted, hasProductColorOptions, isProductOutOfStock } from "@/lib/utils";
 import type { Product, SiteContent } from "@/types/store";
 
 export function ProductCard({
@@ -13,6 +13,8 @@ export function ProductCard({
   buttonLabel?: SiteContent["home"]["productCardButtonLabel"];
 }) {
   const originalPriceCents = getOriginalPriceCentsFromDiscounted(product.priceCents);
+  const isOutOfStock = isProductOutOfStock(product);
+  const hasColors = hasProductColorOptions(product);
 
   return (
     <article className="group rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4 transition hover:-translate-y-1 hover:border-amber-500/70">
@@ -30,6 +32,10 @@ export function ProductCard({
           <h3 className="text-lg font-semibold text-zinc-100">{product.name}</h3>
         </div>
         <p className="text-sm text-zinc-300">{product.shortDescription}</p>
+        {isOutOfStock ? <p className="text-sm font-semibold text-red-300">Produto esgotado no momento</p> : null}
+        {!isOutOfStock && hasColors ? (
+          <p className="text-sm text-zinc-400">Escolha a cor na página do produto antes de comprar.</p>
+        ) : null}
 
         <div className="space-y-3">
           <div className="space-y-1">
@@ -48,11 +54,21 @@ export function ProductCard({
             >
               {buttonLabel}
             </Link>
-            <AddToCartButton
-              className="flex min-h-14 items-center justify-center rounded-lg border border-zinc-700 px-3 py-2 text-center text-sm font-semibold leading-tight text-zinc-100 transition hover:border-amber-400 hover:text-amber-300"
-              productId={product.id}
-              productName={product.name}
-            />
+            {hasColors ? (
+              <Link
+                className="flex min-h-14 items-center justify-center rounded-lg border border-zinc-700 px-3 py-2 text-center text-sm font-semibold leading-tight text-zinc-100 transition hover:border-amber-400 hover:text-amber-300"
+                href={`/produtos/${product.slug}`}
+              >
+                Escolher cor
+              </Link>
+            ) : (
+              <AddToCartButton
+                className="flex min-h-14 items-center justify-center rounded-lg border border-zinc-700 px-3 py-2 text-center text-sm font-semibold leading-tight text-zinc-100 transition hover:border-amber-400 hover:text-amber-300 disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={isOutOfStock}
+                productId={product.id}
+                productName={product.name}
+              />
+            )}
           </div>
         </div>
       </div>

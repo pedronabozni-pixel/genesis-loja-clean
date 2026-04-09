@@ -8,6 +8,14 @@ const newsletterJsonPath = path.join(process.cwd(), "src/data/newsletter-leads.j
 let pool: Pool | null = null;
 let initialized = false;
 
+function isDatabaseConnectionError(error: unknown) {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  return /ENOTFOUND|ECONNREFUSED|DATABASE_URL|postgres\.railway\.internal/i.test(error.message);
+}
+
 function getDatabaseUrl() {
   const databaseUrl = process.env.DATABASE_URL;
 
@@ -36,6 +44,10 @@ async function readLegacyLeadsJson() {
   } catch {
     return [];
   }
+}
+
+async function writeLegacyLeadsJson(leads: NewsletterLead[]) {
+  await fs.writeFile(newsletterJsonPath, JSON.stringify(leads, null, 2), "utf8");
 }
 
 async function initializeNewsletterDb() {
@@ -73,57 +85,110 @@ async function initializeNewsletterDb() {
 }
 
 export async function saveNewsletterLeadToDb(email: string) {
-  await initializeNewsletterDb();
-  const db = getPool();
   const normalizedEmail = email.trim().toLowerCase();
-
-  const existing = await db.query<{ email: string; created_at: string }>(
-    `
-      SELECT email, created_at
-      FROM newsletter_leads
-      WHERE email = $1
-      LIMIT 1
-    `,
-    [normalizedEmail]
-  );
-
-  if (existing.rows[0]) {
-    return {
-      email: existing.rows[0].email,
-      createdAt: new Date(existing.rows[0].created_at).toISOString()
-    } satisfies NewsletterLead;
-  }
-
   const lead: NewsletterLead = {
     email: normalizedEmail,
     createdAt: new Date().toISOString()
   };
 
-  await db.query(
-    `
-      INSERT INTO newsletter_leads (email, created_at)
-      VALUES ($1, $2)
-    `,
-    [lead.email, lead.createdAt]
-  );
+  if (!process.env.DATABASE_URL) {
+    const legacyLeads = await readLegacyLeadsJson();
+    const existingLead = legacyLeads.find((entry) => entry.email.trim().toLowerCase() === normalizedEmail);
 
-  return lead;
+    if (existingLead) {
+      return {
+        email: existingLead.email.trim().toLowerCase(),
+        createdAt: existingLead.createdAt
+      } satisfies NewsletterLead;
+    }
+
+    await writeLegacyLeadsJson([lead, ...legacyLeads]);
+    return lead;
+  }
+
+  try {
+    await initializeNewsletterDb();
+    const db = getPool();
+
+    const existing = await db.query<{ email: string; created_at: string }>(
+      `
+        SELECT email, created_at
+        FROM newsletter_leads
+        WHERE email = $1
+        LIMIT 1
+      `,
+      [normalizedEmail]
+    );
+
+    if (existing.rows[0]) {
+      return {
+        email: existing.rows[0].email,
+        createdAt: new Date(existing.rows[0].created_at).toISOString()
+      } satisfies NewsletterLead;
+    }
+
+    await db.query(
+      `
+        INSERT INTO newsletter_leads (email, created_at)
+        VALUES ($1, $2)
+      `,
+      [lead.email, lead.createdAt]
+    );
+
+    const legacyLeads = await readLegacyLeadsJson();
+    const alreadySaved = legacyLeads.some((entry) => entry.email.trim().toLowerCase() === normalizedEmail);
+
+    if (!alreadySaved) {
+      await writeLegacyLeadsJson([lead, ...legacyLeads]);
+    }
+
+    return lead;
+  } catch (error) {
+    if (!isDatabaseConnectionError(error)) {
+      throw error;
+    }
+
+    const legacyLeads = await readLegacyLeadsJson();
+    const existingLead = legacyLeads.find((entry) => entry.email.trim().toLowerCase() === normalizedEmail);
+
+    if (existingLead) {
+      return {
+        email: existingLead.email.trim().toLowerCase(),
+        createdAt: existingLead.createdAt
+      } satisfies NewsletterLead;
+    }
+
+    await writeLegacyLeadsJson([lead, ...legacyLeads]);
+    return lead;
+  }
 }
 
 export async function getNewsletterLeadsFromDb() {
-  await initializeNewsletterDb();
-  const db = getPool();
+  if (!process.env.DATABASE_URL) {
+    return readLegacyLeadsJson();
+  }
 
-  const result = await db.query<{ email: string; created_at: string }>(
-    `
-      SELECT email, created_at
-      FROM newsletter_leads
-      ORDER BY created_at DESC
-    `
-  );
+  try {
+    await initializeNewsletterDb();
+    const db = getPool();
 
-  return result.rows.map((row) => ({
-    email: row.email,
-    createdAt: new Date(row.created_at).toISOString()
-  })) satisfies NewsletterLead[];
+    const result = await db.query<{ email: string; created_at: string }>(
+      `
+        SELECT email, created_at
+        FROM newsletter_leads
+        ORDER BY created_at DESC
+      `
+    );
+
+    return result.rows.map((row) => ({
+      email: row.email,
+      createdAt: new Date(row.created_at).toISOString()
+    })) satisfies NewsletterLead[];
+  } catch (error) {
+    if (isDatabaseConnectionError(error)) {
+      return readLegacyLeadsJson();
+    }
+
+    throw error;
+  }
 }

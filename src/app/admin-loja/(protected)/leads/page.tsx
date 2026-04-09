@@ -1,5 +1,4 @@
 import { StoreAdminShell } from "@/components/admin/store-admin-shell";
-import { requireStoreAdminSession } from "@/lib/admin-auth";
 import { getNewsletterLeadsFromDb } from "@/lib/newsletter-db";
 
 function formatLeadDate(value: string) {
@@ -10,7 +9,6 @@ function formatLeadDate(value: string) {
 }
 
 export default async function AdminStoreLeadsPage() {
-  await requireStoreAdminSession();
   const leads = await getNewsletterLeadsFromDb();
 
   return (

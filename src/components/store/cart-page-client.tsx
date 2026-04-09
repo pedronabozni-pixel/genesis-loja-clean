@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { CartCheckoutButton } from "@/components/store/cart-checkout-button";
 import { mapCartItems, useCart } from "@/components/store/cart-provider";
-import { formatMoney } from "@/lib/utils";
+import { formatMoney, getProductStockQuantity, isProductOutOfStock } from "@/lib/utils";
 import type { Product } from "@/types/store";
 
 export function CartPageClient({ products }: { products: Product[] }) {
@@ -12,8 +12,12 @@ export function CartPageClient({ products }: { products: Product[] }) {
   const total = entries.reduce((sum, entry) => sum + entry.product.priceCents * entry.quantity, 0);
   const checkoutItems = entries.map(({ product, quantity }) => ({
     productId: product.id,
-    quantity: Math.min(quantity, 99)
+    quantity
   }));
+  const hasUnavailableItems = entries.some(({ product, quantity }) => {
+    const stockQuantity = getProductStockQuantity(product);
+    return isProductOutOfStock(product) || (stockQuantity !== null && quantity > stockQuantity);
+  });
 
   if (entries.length === 0) {
     return (
@@ -44,8 +48,12 @@ export function CartPageClient({ products }: { products: Product[] }) {
         </div>
 
         <div className="space-y-3">
-          {entries.map(({ product, quantity }) => (
-            <article className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-4" key={product.id}>
+          {entries.map(({ product, quantity, selectedColor }) => {
+            const stockQuantity = getProductStockQuantity(product);
+            const maxReached = stockQuantity !== null && quantity >= stockQuantity;
+
+            return (
+            <article className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-4" key={`${product.id}-${selectedColor ?? "sem-cor"}`}>
               <div className="flex flex-col gap-4 md:flex-row">
                 <img alt={product.name} className="h-28 w-full rounded-xl object-cover md:w-36" src={product.image} />
                 <div className="flex flex-1 flex-col justify-between gap-4">
@@ -54,6 +62,12 @@ export function CartPageClient({ products }: { products: Product[] }) {
                       <p className="text-xs uppercase tracking-[0.2em] text-amber-300">{product.category}</p>
                       <h2 className="text-xl font-semibold">{product.name}</h2>
                       <p className="text-sm text-zinc-300">{product.shortDescription}</p>
+                      {selectedColor ? <p className="text-sm text-zinc-400">Cor: {selectedColor}</p> : null}
+                      {stockQuantity !== null ? (
+                        <p className="text-sm text-zinc-400">
+                          Estoque disponível: {stockQuantity > 0 ? `${stockQuantity} unidade(s)` : "esgotado"}
+                        </p>
+                      ) : null}
                     </div>
                       </div>
 
@@ -62,7 +76,7 @@ export function CartPageClient({ products }: { products: Product[] }) {
                       <button
                         aria-label={`Diminuir quantidade de ${product.name}`}
                         className="h-9 w-9 rounded-full border border-zinc-700 text-lg text-zinc-200 transition hover:border-amber-400 hover:text-amber-300"
-                        onClick={() => setQuantity(product.id, quantity - 1)}
+                        onClick={() => setQuantity(product.id, quantity - 1, selectedColor)}
                         type="button"
                       >
                         -
@@ -71,8 +85,8 @@ export function CartPageClient({ products }: { products: Product[] }) {
                       <button
                         aria-label={`Aumentar quantidade de ${product.name}`}
                         className="h-9 w-9 rounded-full border border-zinc-700 text-lg text-zinc-200 transition hover:border-amber-400 hover:text-amber-300 disabled:cursor-not-allowed disabled:opacity-40"
-                        disabled={quantity >= 99}
-                        onClick={() => setQuantity(product.id, quantity + 1)}
+                        disabled={quantity >= 99 || maxReached}
+                        onClick={() => setQuantity(product.id, quantity + 1, selectedColor)}
                         type="button"
                       >
                         +
@@ -81,7 +95,7 @@ export function CartPageClient({ products }: { products: Product[] }) {
 
                     <div className="flex items-center gap-4">
                       <p className="text-lg font-bold text-amber-300">{formatMoney(product.priceCents * quantity)}</p>
-                      <button className="text-sm text-red-300" onClick={() => removeItem(product.id)} type="button">
+                      <button className="text-sm text-red-300" onClick={() => removeItem(product.id, selectedColor)} type="button">
                         Remover
                       </button>
                     </div>
@@ -89,7 +103,8 @@ export function CartPageClient({ products }: { products: Product[] }) {
                 </div>
               </div>
             </article>
-          ))}
+          );
+          })}
         </div>
       </section>
 
@@ -98,10 +113,11 @@ export function CartPageClient({ products }: { products: Product[] }) {
         <h2 className="mt-2 font-serif text-2xl">Seu pedido</h2>
 
         <div className="mt-5 space-y-3 text-sm text-zinc-300">
-          {entries.map(({ product, quantity }) => (
-            <div className="flex items-start justify-between gap-3" key={product.id}>
+          {entries.map(({ product, quantity, selectedColor }) => (
+            <div className="flex items-start justify-between gap-3" key={`${product.id}-${selectedColor ?? "sem-cor"}`}>
               <span>
-                {product.name} x{quantity}
+                {product.name}
+                {selectedColor ? ` (${selectedColor})` : ""} x{quantity}
               </span>
               <span>{formatMoney(product.priceCents * quantity)}</span>
             </div>
@@ -115,9 +131,20 @@ export function CartPageClient({ products }: { products: Product[] }) {
           <span className="text-2xl font-bold text-amber-300">{formatMoney(total)}</span>
         </div>
 
+        {hasUnavailableItems ? (
+          <p className="mt-4 text-sm text-red-300">
+            Existem itens sem estoque suficiente no carrinho. Ajuste as quantidades antes de finalizar.
+          </p>
+        ) : null}
+
         <CartCheckoutButton
           className="mt-5 w-full rounded-xl bg-amber-400 px-5 py-3 font-bold text-zinc-950 transition hover:bg-amber-300 disabled:opacity-60"
-          items={checkoutItems}
+          disabled={hasUnavailableItems}
+          items={entries.map(({ product, quantity, selectedColor }) => ({
+            productId: product.id,
+            quantity,
+            selectedColor
+          }))}
         />
 
         <Link className="mt-3 inline-flex w-full justify-center rounded-xl border border-zinc-700 px-5 py-3 text-sm font-semibold text-zinc-200" href="/">

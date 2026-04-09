@@ -1,12 +1,14 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { AddToCartButton } from "@/components/store/add-to-cart-button";
 import { CheckoutButton } from "@/components/store/hotmart-button";
+import { ProductPurchasePanel } from "@/components/store/product-purchase-panel";
 import { ProductCard } from "@/components/store/product-card";
 import { ProductVideoPreview } from "@/components/store/product-video-preview";
 import { ProductViewTracker } from "@/components/store/product-view-tracker";
 import { getProductBySlug, getProducts, getSiteContent } from "@/lib/store-data";
-import { formatMoney } from "@/lib/utils";
+import { formatMoney, hasProductColorOptions, isProductOutOfStock } from "@/lib/utils";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -43,6 +45,8 @@ export default async function ProductPage({ params }: Props) {
   const products = await getProducts();
   const siteContent = await getSiteContent();
   const related = products.filter((item) => item.slug !== product.slug).slice(0, 3);
+  const isOutOfStock = isProductOutOfStock(product);
+  const hasColors = hasProductColorOptions(product);
 
   return (
     <div className="space-y-10">
@@ -83,19 +87,28 @@ export default async function ProductPage({ params }: Props) {
             <p className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm text-amber-200">{product.stockHint}</p>
           ) : null}
 
-          <div className="flex flex-wrap items-center gap-3">
-            <CheckoutButton
-              className="rounded-xl bg-amber-400 px-6 py-3 text-sm font-bold uppercase tracking-wide text-zinc-950 transition hover:scale-[1.02] hover:bg-amber-300"
-              href={product.checkoutUrl}
-              label={siteContent.home.productPage.checkoutButtonLabel}
-              productName={product.name}
+          {isOutOfStock ? <p className="text-sm font-semibold text-red-300">Produto esgotado no momento.</p> : null}
+
+          {hasColors || isOutOfStock ? (
+            <ProductPurchasePanel
+              checkoutButtonLabel={siteContent.home.productPage.checkoutButtonLabel}
+              product={product}
             />
-            <AddToCartButton
-              className="rounded-xl border border-zinc-700 px-6 py-3 text-sm font-semibold text-zinc-200 transition hover:border-amber-400 hover:text-amber-300"
-              productId={product.id}
-              productName={product.name}
-            />
-          </div>
+          ) : (
+            <div className="flex flex-wrap items-center gap-3">
+              <CheckoutButton
+                className="rounded-xl bg-amber-400 px-6 py-3 text-sm font-bold uppercase tracking-wide text-zinc-950 transition hover:scale-[1.02] hover:bg-amber-300"
+                href={product.checkoutUrl}
+                label={siteContent.home.productPage.checkoutButtonLabel}
+                productName={product.name}
+              />
+              <AddToCartButton
+                className="rounded-xl border border-zinc-700 px-6 py-3 text-sm font-semibold text-zinc-200 transition hover:border-amber-400 hover:text-amber-300"
+                productId={product.id}
+                productName={product.name}
+              />
+            </div>
+          )}
         </div>
       </section>
 

@@ -9,20 +9,30 @@ const MAX_CART_ITEM_QUANTITY = 99;
 export type CartItem = {
   productId: string;
   quantity: number;
+  selectedColor?: string;
 };
 
 type CartContextValue = {
   items: CartItem[];
   totalItems: number;
-  addItem: (productId: string, quantity?: number) => void;
-  removeItem: (productId: string) => void;
-  setQuantity: (productId: string, quantity: number) => void;
+  addItem: (productId: string, quantity?: number, selectedColor?: string) => void;
+  removeItem: (productId: string, selectedColor?: string) => void;
+  setQuantity: (productId: string, quantity: number, selectedColor?: string) => void;
   clearCart: () => void;
-  hasProduct: (productId: string) => boolean;
-  getQuantity: (productId: string) => number;
+  hasProduct: (productId: string, selectedColor?: string) => boolean;
+  getQuantity: (productId: string, selectedColor?: string) => number;
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
+
+function normalizeSelectedColor(value?: string) {
+  const normalized = value?.trim();
+  return normalized ? normalized : undefined;
+}
+
+function getCartItemKey(productId: string, selectedColor?: string) {
+  return `${productId}::${normalizeSelectedColor(selectedColor) ?? ""}`;
+}
 
 function readCart() {
   if (typeof window === "undefined") {
@@ -41,6 +51,7 @@ function readCart() {
       .filter((item) => item.productId && item.quantity > 0)
       .map((item) => ({
         ...item,
+        selectedColor: normalizeSelectedColor(item.selectedColor),
         quantity: Math.min(item.quantity, MAX_CART_ITEM_QUANTITY)
       }));
   } catch {
@@ -64,34 +75,40 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [items]);
 
   const value = useMemo<CartContextValue>(() => {
-    function addItem(productId: string, quantity = 1) {
+    function addItem(productId: string, quantity = 1, selectedColor?: string) {
+      const normalizedColor = normalizeSelectedColor(selectedColor);
+      const itemKey = getCartItemKey(productId, normalizedColor);
+
       setItems((current) => {
-        const existing = current.find((item) => item.productId === productId);
+        const existing = current.find((item) => getCartItemKey(item.productId, item.selectedColor) === itemKey);
 
         if (existing) {
           return current.map((item) =>
-            item.productId === productId
+            getCartItemKey(item.productId, item.selectedColor) === itemKey
               ? { ...item, quantity: Math.min(item.quantity + quantity, MAX_CART_ITEM_QUANTITY) }
               : item
           );
         }
 
-        return [...current, { productId, quantity: Math.min(quantity, MAX_CART_ITEM_QUANTITY) }];
+        return [...current, { productId, quantity: Math.min(quantity, MAX_CART_ITEM_QUANTITY), selectedColor: normalizedColor }];
       });
     }
 
-    function removeItem(productId: string) {
-      setItems((current) => current.filter((item) => item.productId !== productId));
+    function removeItem(productId: string, selectedColor?: string) {
+      const itemKey = getCartItemKey(productId, selectedColor);
+      setItems((current) => current.filter((item) => getCartItemKey(item.productId, item.selectedColor) !== itemKey));
     }
 
-    function setQuantity(productId: string, quantity: number) {
+    function setQuantity(productId: string, quantity: number, selectedColor?: string) {
+      const itemKey = getCartItemKey(productId, selectedColor);
+
       setItems((current) => {
         if (quantity <= 0) {
-          return current.filter((item) => item.productId !== productId);
+          return current.filter((item) => getCartItemKey(item.productId, item.selectedColor) !== itemKey);
         }
 
         return current.map((item) =>
-          item.productId === productId
+          getCartItemKey(item.productId, item.selectedColor) === itemKey
             ? { ...item, quantity: Math.min(quantity, MAX_CART_ITEM_QUANTITY) }
             : item
         );
@@ -102,12 +119,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       setItems([]);
     }
 
-    function hasProduct(productId: string) {
-      return items.some((item) => item.productId === productId);
+    function hasProduct(productId: string, selectedColor?: string) {
+      const itemKey = getCartItemKey(productId, selectedColor);
+      return items.some((item) => getCartItemKey(item.productId, item.selectedColor) === itemKey);
     }
 
-    function getQuantity(productId: string) {
-      return items.find((item) => item.productId === productId)?.quantity ?? 0;
+    function getQuantity(productId: string, selectedColor?: string) {
+      const itemKey = getCartItemKey(productId, selectedColor);
+      return items.find((item) => getCartItemKey(item.productId, item.selectedColor) === itemKey)?.quantity ?? 0;
     }
 
     return {
@@ -144,7 +163,7 @@ export function mapCartItems(products: Product[], items: CartItem[]) {
         return null;
       }
 
-      return { product, quantity: item.quantity };
+      return { product, quantity: item.quantity, selectedColor: normalizeSelectedColor(item.selectedColor) };
     })
-    .filter(Boolean) as Array<{ product: Product; quantity: number }>;
+    .filter(Boolean) as Array<{ product: Product; quantity: number; selectedColor?: string }>;
 }

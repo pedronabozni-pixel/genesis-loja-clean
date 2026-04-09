@@ -26,6 +26,17 @@ function getMediaLabel(value?: string) {
   return parts[parts.length - 1] || value;
 }
 
+function colorsToText(colors?: string[]) {
+  return Array.isArray(colors) ? colors.join(", ") : "";
+}
+
+function textToColors(value: string) {
+  return value
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
 export function StoreAdminProductEditor({
   initialProducts,
   loginPath = "/admin-loja/login"
@@ -107,7 +118,9 @@ export function StoreAdminProductEditor({
         rating: 5,
         reviewsCount: 1,
         features: ["Novo diferencial do produto"],
-        stockHint: ""
+        stockHint: "",
+        stockQuantity: null,
+        colors: []
       })
     });
     setCreatingProduct(false);
@@ -290,12 +303,37 @@ export function StoreAdminProductEditor({
               />
             </label>
 
+            <label className="text-sm text-zinc-300">
+              Estoque disponível
+              <input
+                className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-zinc-100"
+                min="0"
+                onChange={(event) => {
+                  const nextValue = event.target.value.trim();
+                  updateField(index, "stockQuantity", nextValue === "" ? null : Math.max(0, Number.parseInt(nextValue, 10) || 0));
+                }}
+                placeholder="Vazio = sem controle"
+                type="number"
+                value={product.stockQuantity ?? ""}
+              />
+            </label>
+
             <label className="text-sm text-zinc-300 md:col-span-2">
               Descrição curta
               <input
                 className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-zinc-100"
                 onChange={(event) => updateField(index, "shortDescription", event.target.value)}
                 value={product.shortDescription}
+              />
+            </label>
+
+            <label className="text-sm text-zinc-300 md:col-span-2">
+              Cores disponíveis
+              <input
+                className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-zinc-100"
+                onChange={(event) => updateField(index, "colors", textToColors(event.target.value))}
+                placeholder="Ex.: Preto, Branco, Azul"
+                value={colorsToText(product.colors)}
               />
             </label>
 
@@ -380,6 +418,17 @@ export function StoreAdminProductEditor({
           </div>
           <p className="text-sm text-zinc-400">
             Margem bruta estimada: R$ {((product.priceCents - product.costCents) / 100).toFixed(2)}
+          </p>
+          <p className="text-sm text-zinc-400">
+            Status do estoque:{" "}
+            {product.stockQuantity == null
+              ? "Sem controle manual"
+              : product.stockQuantity > 0
+                ? `${product.stockQuantity} unidade(s) disponível(is)`
+                : "Produto esgotado"}
+          </p>
+          <p className="text-sm text-zinc-400">
+            Cores configuradas: {product.colors && product.colors.length > 0 ? product.colors.join(", ") : "Nenhuma"}
           </p>
           <p className="text-sm text-zinc-400">Vídeo atual: {getMediaLabel(product.videoUrl)}</p>
           {product.videoUrl ? (

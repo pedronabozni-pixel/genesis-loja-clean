@@ -1,10 +1,8 @@
 import { StoreAdminProductEditor } from "@/components/admin/store-admin-product-editor";
 import { StoreAdminShell } from "@/components/admin/store-admin-shell";
-import { requireStoreAdminSession } from "@/lib/admin-auth";
 import { getProducts } from "@/lib/store-data";
 
 export default async function AdminStoreProductsPage() {
-  await requireStoreAdminSession();
   const products = await getProducts();
 
   return (

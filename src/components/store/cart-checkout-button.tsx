@@ -5,19 +5,21 @@ import { useState } from "react";
 type CheckoutItem = {
   productId: string;
   quantity: number;
+  selectedColor?: string;
 };
 
 type Props = {
   className?: string;
+  disabled?: boolean;
   items: CheckoutItem[];
 };
 
-export function CartCheckoutButton({ className = "", items }: Props) {
+export function CartCheckoutButton({ className = "", disabled = false, items }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   async function handleCheckout() {
-    if (loading) {
+    if (loading || disabled) {
       return;
     }
 
@@ -68,7 +70,7 @@ export function CartCheckoutButton({ className = "", items }: Props) {
         <strong className="text-amber-300">WhatsApp</strong>.<br />
         💳 Pagamento com <strong className="text-amber-300">cartão</strong> direto pelo site abaixo.
       </p>
-      <button className={className} disabled={loading || items.length === 0} onClick={handleCheckout} type="button">
+      <button className={className} disabled={disabled || loading || items.length === 0} onClick={handleCheckout} type="button">
         {loading ? "Abrindo checkout..." : "Finalizar compra com cartão"}
       </button>
       {error ? <p className="text-sm text-red-300">{error}</p> : null}

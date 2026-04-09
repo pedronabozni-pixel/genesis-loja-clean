@@ -57,6 +57,8 @@ type ProductRow = {
   is_best_seller: boolean;
   is_anchor: boolean;
   stock_hint: string | null;
+  stock_quantity: number | null;
+  colors: string[];
   features: string[];
 };
 
@@ -78,17 +80,28 @@ function rowToProduct(row: ProductRow): Product {
     isBestSeller: row.is_best_seller,
     isAnchor: row.is_anchor,
     stockHint: row.stock_hint ?? "",
+    stockQuantity: row.stock_quantity === null ? null : Number(row.stock_quantity),
+    colors: Array.isArray(row.colors) ? row.colors : [],
     features: Array.isArray(row.features) ? row.features : []
   };
 }
 
 function normalizeProduct(product: Product): Product {
+  const stockQuantity =
+    typeof product.stockQuantity === "number" && Number.isFinite(product.stockQuantity)
+      ? Math.max(0, Math.trunc(product.stockQuantity))
+      : null;
+
   return {
     ...product,
     videoUrl: product.videoUrl ?? "",
     stockHint: product.stockHint ?? "",
+    stockQuantity,
     isBestSeller: Boolean(product.isBestSeller),
     isAnchor: Boolean(product.isAnchor),
+    colors: Array.isArray(product.colors)
+      ? product.colors.map((color) => String(color).trim()).filter(Boolean)
+      : [],
     features: Array.isArray(product.features) ? product.features : []
   };
 }
@@ -118,9 +131,14 @@ async function initializeProductsTable() {
       is_best_seller BOOLEAN NOT NULL DEFAULT FALSE,
       is_anchor BOOLEAN NOT NULL DEFAULT FALSE,
       stock_hint TEXT,
+      stock_quantity INTEGER,
+      colors JSONB NOT NULL DEFAULT '[]'::jsonb,
       features JSONB NOT NULL DEFAULT '[]'::jsonb
     )
   `);
+
+  await db.query("ALTER TABLE store_products ADD COLUMN IF NOT EXISTS stock_quantity INTEGER");
+  await db.query("ALTER TABLE store_products ADD COLUMN IF NOT EXISTS colors JSONB NOT NULL DEFAULT '[]'::jsonb");
 
   const result = await db.query<{ total: string }>("SELECT COUNT(*)::text AS total FROM store_products");
   const total = Number.parseInt(result.rows[0]?.total ?? "0", 10);
@@ -134,12 +152,12 @@ async function initializeProductsTable() {
           INSERT INTO store_products (
             id, slug, name, category, cost_cents, price_cents, short_description, description,
             image, video_url, checkout_url, rating, reviews_count, is_best_seller, is_anchor,
-            stock_hint, features
+            stock_hint, stock_quantity, colors, features
           )
           VALUES (
             $1, $2, $3, $4, $5, $6, $7, $8,
             $9, $10, $11, $12, $13, $14, $15,
-            $16, $17::jsonb
+            $16, $17, $18::jsonb, $19::jsonb
           )
           ON CONFLICT (id) DO NOTHING
         `,
@@ -160,6 +178,8 @@ async function initializeProductsTable() {
           Boolean(product.isBestSeller),
           Boolean(product.isAnchor),
           product.stockHint || null,
+          product.stockQuantity ?? null,
+          JSON.stringify(product.colors ?? []),
           JSON.stringify(product.features)
         ]
       );
@@ -255,7 +275,9 @@ export async function updateProductInStore(slug: string, payload: Product) {
           is_best_seller = $14,
           is_anchor = $15,
           stock_hint = $16,
-          features = $17::jsonb
+          stock_quantity = $17,
+          colors = $18::jsonb,
+          features = $19::jsonb
       WHERE slug = $1
       RETURNING *
     `,
@@ -276,6 +298,8 @@ export async function updateProductInStore(slug: string, payload: Product) {
       Boolean(product.isBestSeller),
       Boolean(product.isAnchor),
       product.stockHint || null,
+      product.stockQuantity ?? null,
+      JSON.stringify(product.colors ?? []),
       JSON.stringify(product.features)
     ]
   );
@@ -302,12 +326,12 @@ export async function createProductInStore(payload: Product) {
       INSERT INTO store_products (
         id, slug, name, category, cost_cents, price_cents, short_description, description,
         image, video_url, checkout_url, rating, reviews_count, is_best_seller, is_anchor,
-        stock_hint, features
+        stock_hint, stock_quantity, colors, features
       )
       VALUES (
         $1, $2, $3, $4, $5, $6, $7, $8,
         $9, $10, $11, $12, $13, $14, $15,
-        $16, $17::jsonb
+        $16, $17, $18::jsonb, $19::jsonb
       )
       RETURNING *
     `,
@@ -328,6 +352,8 @@ export async function createProductInStore(payload: Product) {
       Boolean(product.isBestSeller),
       Boolean(product.isAnchor),
       product.stockHint || null,
+      product.stockQuantity ?? null,
+      JSON.stringify(product.colors ?? []),
       JSON.stringify(product.features)
     ]
   );

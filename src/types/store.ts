@@ -15,7 +15,19 @@ export type Product = {
   isBestSeller?: boolean;
   isAnchor?: boolean;
   stockHint?: string;
+  stockQuantity?: number | null;
+  colors?: string[];
   features: string[];
+};
+
+export type CustomerType = "Lojista" | "Revendedor" | "Consumidor final";
+
+export type WhatsAppOrderFormData = {
+  fullName: string;
+  phone: string;
+  cityState: string;
+  customerType: CustomerType;
+  notes: string;
 };
 
 export type NewsletterLead = {

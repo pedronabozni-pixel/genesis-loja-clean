@@ -4,7 +4,7 @@
       "badge": "Mural da Genesis",
       "title": "Semana de lançamento: 30% OFF em todo o site",
       "description": "Aproveite condições especiais na nossa primeira semana e garanta seus produtos com desconto por tempo limitado.",
-      "checkoutButtonPrefix": "Comprar Agora",
+      "checkoutButtonPrefix": "Montar pedido no WhatsApp",
       "secondaryButtonLabel": "Ver detalhes",
       "countdownLoadingText": "Oferta de hoje com tempo limitado",
       "countdownPrefix": "Oferta de hoje termina em"
@@ -20,7 +20,7 @@
       },
       {
         "title": "Compra segura",
-        "text": "Checkout seguro via Stripe para maior confiança."
+        "text": "Seu pedido é enviado para nosso atendimento comercial, com confirmação de frete e pagamento pelo WhatsApp."
       }
     ],
     "featuredProductsTitle": "Produtos em destaque",
@@ -60,7 +60,7 @@
       "notFoundTitle": "Produto não encontrado",
       "metadataTitleSuffix": "Comprar Agora",
       "badge": "Oferta de hoje",
-      "checkoutButtonLabel": "Compre agora",
+      "checkoutButtonLabel": "Solicitar pedido",
       "relatedProductsTitle": "Você também pode gostar"
     }
   },
