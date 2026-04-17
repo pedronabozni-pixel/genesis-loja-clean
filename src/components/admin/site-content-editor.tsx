@@ -1,593 +1,185 @@
 "use client";
 
-import { ReactNode, useState } from "react";
+import { useState } from "react";
+import { AdminCard, AdminCardHeader } from "@/components/admin/admin-ui";
 import type { SiteContent } from "@/types/store";
 
-function SectionCard({
-  title,
-  description,
-  defaultOpen = false,
-  children
-}: {
-  title: string;
-  description: string;
-  defaultOpen?: boolean;
-  children: ReactNode;
-}) {
-  return (
-    <details className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5" open={defaultOpen}>
-      <summary className="cursor-pointer list-none">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h3 className="font-serif text-2xl text-zinc-100">{title}</h3>
-            <p className="mt-1 text-sm text-zinc-400">{description}</p>
-          </div>
-          <span className="rounded-full border border-zinc-700 px-3 py-1 text-xs uppercase tracking-[0.2em] text-zinc-400">
-            Expandir
-          </span>
-        </div>
-      </summary>
-      <div className="mt-4 grid gap-3 md:grid-cols-2">{children}</div>
-    </details>
-  );
-}
+const cmsTabs = [
+  { id: "home", label: "Home" },
+  { id: "product", label: "Product Page" },
+  { id: "about", label: "About" },
+  { id: "contact", label: "Contact" }
+] as const;
 
-function InputField({
+type CmsTab = (typeof cmsTabs)[number]["id"];
+
+function Field({
   label,
   value,
   onChange,
-  type = "text",
-  min,
-  max
-}: {
-  label: string;
-  value: string | number;
-  onChange: (value: string) => void;
-  type?: string;
-  min?: number;
-  max?: number;
-}) {
-  return (
-    <label className="text-sm text-zinc-300">
-      {label}
-      <input
-        className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-zinc-100"
-        max={max}
-        min={min}
-        onChange={(event) => onChange(event.target.value)}
-        type={type}
-        value={value}
-      />
-    </label>
-  );
-}
-
-function TextAreaField({
-  label,
-  value,
-  onChange
+  textarea = false
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
+  textarea?: boolean;
 }) {
   return (
-    <label className="text-sm text-zinc-300 md:col-span-2">
-      {label}
-      <textarea
-        className="mt-1 min-h-24 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-zinc-100"
-        onChange={(event) => onChange(event.target.value)}
-        value={value}
-      />
+    <label className="space-y-2">
+      <span className="text-sm font-medium text-zinc-300">{label}</span>
+      {textarea ? (
+        <textarea
+          className="min-h-[140px] w-full rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-zinc-100 outline-none"
+          onChange={(event) => onChange(event.target.value)}
+          value={value}
+        />
+      ) : (
+        <input
+          className="w-full rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-zinc-100 outline-none"
+          onChange={(event) => onChange(event.target.value)}
+          value={value}
+        />
+      )}
     </label>
   );
 }
 
+function Block({
+  title,
+  description,
+  children
+}: {
+  title: string;
+  description: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <AdminCard>
+      <AdminCardHeader description={description} title={title} />
+      <div className="grid gap-5 border-t border-zinc-800 p-5 md:grid-cols-2 md:p-6">{children}</div>
+    </AdminCard>
+  );
+}
+
 export function SiteContentEditor({ initialSiteContent }: { initialSiteContent: SiteContent }) {
-  const [siteContent, setSiteContent] = useState<SiteContent>(initialSiteContent);
+  const [siteContent, setSiteContent] = useState(initialSiteContent);
+  const [activeTab, setActiveTab] = useState<CmsTab>("home");
+  const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
-  const [savingSiteContent, setSavingSiteContent] = useState(false);
 
   async function saveSiteContent() {
-    setSavingSiteContent(true);
+    setSaving(true);
+    setMessage("");
     const response = await fetch("/api/loja-admin/site-content", {
       method: "PUT",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(siteContent)
     });
-    setSavingSiteContent(false);
-
     const data = (await response.json()) as { message?: string };
+    setSaving(false);
 
     if (!response.ok) {
-      setMessage(data.message ?? "Falha ao salvar conteúdo do site.");
+      setMessage(data.message ?? "Failed to save content.");
       return;
     }
 
-    setMessage("Conteúdo do site atualizado com sucesso.");
+    setMessage("Content updated successfully.");
   }
 
   return (
-    <div className="space-y-4">
-      <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5">
-        <h2 className="font-serif text-3xl text-zinc-100">Conteúdo do site</h2>
-        <p className="mt-1 text-sm text-zinc-400">
-          Edite os textos da Home, página de produto, Sobre e Contato em blocos separados.
-        </p>
-      </div>
-
-      <SectionCard
-        defaultOpen
-        description="Controle os textos principais do mural da Home."
-        title="Mural da Home"
-      >
-        <InputField
-          label="Selo (texto pequeno no topo)"
-          onChange={(value) =>
-            setSiteContent((current) => ({
-              ...current,
-              home: { ...current.home, hero: { ...current.home.hero, badge: value } }
-            }))
-          }
-          value={siteContent.home.hero.badge}
-        />
-        <div className="md:col-span-2">
-          <InputField
-            label="Título principal"
-            onChange={(value) =>
-              setSiteContent((current) => ({
-                ...current,
-                home: { ...current.home, hero: { ...current.home.hero, title: value } }
-              }))
-            }
-            value={siteContent.home.hero.title}
-          />
+    <div className="grid gap-6 xl:grid-cols-[260px_minmax(0,1fr)]">
+      <AdminCard className="p-4">
+        <p className="text-[11px] uppercase tracking-[0.26em] text-zinc-500">CMS Areas</p>
+        <div className="mt-4 space-y-2">
+          {cmsTabs.map((tab) => (
+            <button
+              className={
+                activeTab === tab.id
+                  ? "w-full rounded-2xl border border-amber-400/25 bg-amber-400/10 px-4 py-3 text-left text-sm font-medium text-zinc-50"
+                  : "w-full rounded-2xl border border-transparent px-4 py-3 text-left text-sm text-zinc-400 transition hover:border-zinc-800 hover:bg-zinc-950"
+              }
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              type="button"
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
-        <TextAreaField
-          label="Descrição"
-          onChange={(value) =>
-            setSiteContent((current) => ({
-              ...current,
-              home: { ...current.home, hero: { ...current.home.hero, description: value } }
-            }))
-          }
-          value={siteContent.home.hero.description}
-        />
-        <InputField
-          label="Botão principal do hero"
-          onChange={(value) =>
-            setSiteContent((current) => ({
-              ...current,
-              home: { ...current.home, hero: { ...current.home.hero, checkoutButtonPrefix: value } }
-            }))
-          }
-          value={siteContent.home.hero.checkoutButtonPrefix}
-        />
-        <InputField
-          label="Botão secundário do hero"
-          onChange={(value) =>
-            setSiteContent((current) => ({
-              ...current,
-              home: { ...current.home, hero: { ...current.home.hero, secondaryButtonLabel: value } }
-            }))
-          }
-          value={siteContent.home.hero.secondaryButtonLabel}
-        />
-        <InputField
-          label="Texto de espera do contador"
-          onChange={(value) =>
-            setSiteContent((current) => ({
-              ...current,
-              home: { ...current.home, hero: { ...current.home.hero, countdownLoadingText: value } }
-            }))
-          }
-          value={siteContent.home.hero.countdownLoadingText}
-        />
-        <InputField
-          label="Prefixo do contador"
-          onChange={(value) =>
-            setSiteContent((current) => ({
-              ...current,
-              home: { ...current.home, hero: { ...current.home.hero, countdownPrefix: value } }
-            }))
-          }
-          value={siteContent.home.hero.countdownPrefix}
-        />
-      </SectionCard>
+      </AdminCard>
 
-      <SectionCard
-        description="Gerencie os cards de informação e os botões da vitrine."
-        title="Home e Cards"
-      >
-        <InputField
-          label="Título da seção de produtos"
-          onChange={(value) =>
-            setSiteContent((current) => ({
-              ...current,
-              home: { ...current.home, featuredProductsTitle: value }
-            }))
-          }
-          value={siteContent.home.featuredProductsTitle}
-        />
-        <InputField
-          label="Botão dos cards de produto"
-          onChange={(value) =>
-            setSiteContent((current) => ({
-              ...current,
-              home: { ...current.home, productCardButtonLabel: value }
-            }))
-          }
-          value={siteContent.home.productCardButtonLabel}
-        />
+      <div className="space-y-5">
+        {activeTab === "home" ? (
+          <>
+            <Block description="Main content and hero actions for the storefront landing page." title="Home Hero">
+              <Field label="Badge" onChange={(value) => setSiteContent((current) => ({ ...current, home: { ...current.home, hero: { ...current.home.hero, badge: value } } }))} value={siteContent.home.hero.badge} />
+              <Field label="Primary CTA" onChange={(value) => setSiteContent((current) => ({ ...current, home: { ...current.home, hero: { ...current.home.hero, checkoutButtonPrefix: value } } }))} value={siteContent.home.hero.checkoutButtonPrefix} />
+              <div className="md:col-span-2">
+                <Field label="Title" onChange={(value) => setSiteContent((current) => ({ ...current, home: { ...current.home, hero: { ...current.home.hero, title: value } } }))} value={siteContent.home.hero.title} />
+              </div>
+              <div className="md:col-span-2">
+                <Field label="Description" onChange={(value) => setSiteContent((current) => ({ ...current, home: { ...current.home, hero: { ...current.home.hero, description: value } } }))} textarea value={siteContent.home.hero.description} />
+              </div>
+            </Block>
 
-        {siteContent.home.infoCards.map((card, index) => (
-          <div className="grid gap-3 rounded-xl border border-zinc-800 bg-zinc-950/50 p-3 md:col-span-2 md:grid-cols-2" key={`${card.title}-${index}`}>
-            <InputField
-              label={`Card ${index + 1} - título`}
-              onChange={(value) =>
-                setSiteContent((current) => ({
-                  ...current,
-                  home: {
-                    ...current.home,
-                    infoCards: current.home.infoCards.map((item, itemIndex) =>
-                      itemIndex === index ? { ...item, title: value } : item
-                    )
-                  }
-                }))
-              }
-              value={card.title}
-            />
-            <InputField
-              label={`Card ${index + 1} - texto`}
-              onChange={(value) =>
-                setSiteContent((current) => ({
-                  ...current,
-                  home: {
-                    ...current.home,
-                    infoCards: current.home.infoCards.map((item, itemIndex) =>
-                      itemIndex === index ? { ...item, text: value } : item
-                    )
-                  }
-                }))
-              }
-              value={card.text}
-            />
-          </div>
-        ))}
-      </SectionCard>
+            <Block description="Cards, social proof and newsletter messages that support conversion." title="Support Blocks">
+              <Field label="Featured products title" onChange={(value) => setSiteContent((current) => ({ ...current, home: { ...current.home, featuredProductsTitle: value } }))} value={siteContent.home.featuredProductsTitle} />
+              <Field label="Product card button" onChange={(value) => setSiteContent((current) => ({ ...current, home: { ...current.home, productCardButtonLabel: value } }))} value={siteContent.home.productCardButtonLabel} />
+              <Field label="Social proof eyebrow" onChange={(value) => setSiteContent((current) => ({ ...current, home: { ...current.home, socialProof: { ...current.home.socialProof, eyebrow: value } } }))} value={siteContent.home.socialProof.eyebrow} />
+              <Field label="Social proof title" onChange={(value) => setSiteContent((current) => ({ ...current, home: { ...current.home, socialProof: { ...current.home.socialProof, title: value } } }))} value={siteContent.home.socialProof.title} />
+              <Field label="Newsletter title" onChange={(value) => setSiteContent((current) => ({ ...current, home: { ...current.home, newsletter: { ...current.home.newsletter, title: value } } }))} value={siteContent.home.newsletter.title} />
+              <Field label="Newsletter success message" onChange={(value) => setSiteContent((current) => ({ ...current, home: { ...current.home, newsletter: { ...current.home.newsletter, successMessage: value } } }))} textarea value={siteContent.home.newsletter.successMessage} />
+            </Block>
+          </>
+        ) : null}
 
-      <SectionCard
-        description="Edite o título da seção e os depoimentos usados na Home."
-        title="Provas Sociais"
-      >
-        <InputField
-          label="Selo da seção"
-          onChange={(value) =>
-            setSiteContent((current) => ({
-              ...current,
-              home: { ...current.home, socialProof: { ...current.home.socialProof, eyebrow: value } }
-            }))
-          }
-          value={siteContent.home.socialProof.eyebrow}
-        />
-        <InputField
-          label="Título da seção"
-          onChange={(value) =>
-            setSiteContent((current) => ({
-              ...current,
-              home: { ...current.home, socialProof: { ...current.home.socialProof, title: value } }
-            }))
-          }
-          value={siteContent.home.socialProof.title}
-        />
+        {activeTab === "product" ? (
+          <Block description="Messages and labels used in the product detail experience." title="Product Page">
+            <Field label="Badge" onChange={(value) => setSiteContent((current) => ({ ...current, home: { ...current.home, productPage: { ...current.home.productPage, badge: value } } }))} value={siteContent.home.productPage.badge} />
+            <Field label="Checkout button label" onChange={(value) => setSiteContent((current) => ({ ...current, home: { ...current.home, productPage: { ...current.home.productPage, checkoutButtonLabel: value } } }))} value={siteContent.home.productPage.checkoutButtonLabel} />
+            <Field label="SEO title suffix" onChange={(value) => setSiteContent((current) => ({ ...current, home: { ...current.home, productPage: { ...current.home.productPage, metadataTitleSuffix: value } } }))} value={siteContent.home.productPage.metadataTitleSuffix} />
+            <Field label="Related products title" onChange={(value) => setSiteContent((current) => ({ ...current, home: { ...current.home, productPage: { ...current.home.productPage, relatedProductsTitle: value } } }))} value={siteContent.home.productPage.relatedProductsTitle} />
+          </Block>
+        ) : null}
 
-        {siteContent.home.socialProof.testimonials.map((testimonial, index) => (
-          <div className="grid gap-3 rounded-xl border border-zinc-800 bg-zinc-950/50 p-3 md:col-span-2 md:grid-cols-3" key={`${testimonial.name}-${index}`}>
-            <InputField
-              label={`Avaliação ${index + 1} - nome`}
-              onChange={(value) =>
-                setSiteContent((current) => ({
-                  ...current,
-                  home: {
-                    ...current.home,
-                    socialProof: {
-                      ...current.home.socialProof,
-                      testimonials: current.home.socialProof.testimonials.map((item, itemIndex) =>
-                        itemIndex === index ? { ...item, name: value } : item
-                      )
-                    }
-                  }
-                }))
-              }
-              value={testimonial.name}
-            />
+        {activeTab === "about" ? (
+          <Block description="Institutional content used on the About page." title="About Page">
             <div className="md:col-span-2">
-              <InputField
-                label={`Avaliação ${index + 1} - texto`}
-                onChange={(value) =>
-                  setSiteContent((current) => ({
-                    ...current,
-                    home: {
-                      ...current.home,
-                      socialProof: {
-                        ...current.home.socialProof,
-                        testimonials: current.home.socialProof.testimonials.map((item, itemIndex) =>
-                          itemIndex === index ? { ...item, text: value } : item
-                        )
-                      }
-                    }
-                  }))
-                }
-                value={testimonial.text}
-              />
+              <Field label="Title" onChange={(value) => setSiteContent((current) => ({ ...current, about: { ...current.about, title: value } }))} value={siteContent.about.title} />
             </div>
-            <InputField
-              label={`Avaliação ${index + 1} - estrelas`}
-              max={5}
-              min={1}
-              onChange={(value) =>
-                setSiteContent((current) => ({
-                  ...current,
-                  home: {
-                    ...current.home,
-                    socialProof: {
-                      ...current.home.socialProof,
-                      testimonials: current.home.socialProof.testimonials.map((item, itemIndex) =>
-                        itemIndex === index ? { ...item, stars: Number(value) || 5 } : item
-                      )
-                    }
-                  }
-                }))
-              }
-              type="number"
-              value={testimonial.stars}
-            />
-          </div>
-        ))}
-      </SectionCard>
+            <Field label="Paragraph 1" onChange={(value) => setSiteContent((current) => ({ ...current, about: { ...current.about, paragraph1: value } }))} textarea value={siteContent.about.paragraph1} />
+            <Field label="Paragraph 2" onChange={(value) => setSiteContent((current) => ({ ...current, about: { ...current.about, paragraph2: value } }))} textarea value={siteContent.about.paragraph2} />
+            <div className="md:col-span-2">
+              <Field label="Paragraph 3" onChange={(value) => setSiteContent((current) => ({ ...current, about: { ...current.about, paragraph3: value } }))} textarea value={siteContent.about.paragraph3} />
+            </div>
+          </Block>
+        ) : null}
 
-      <SectionCard
-        description="Controle o bloco de captação de e-mail e suas mensagens."
-        title="Newsletter"
-      >
-        <InputField
-          label="Selo da newsletter"
-          onChange={(value) =>
-            setSiteContent((current) => ({
-              ...current,
-              home: { ...current.home, newsletter: { ...current.home.newsletter, eyebrow: value } }
-            }))
-          }
-          value={siteContent.home.newsletter.eyebrow}
-        />
-        <InputField
-          label="Título da newsletter"
-          onChange={(value) =>
-            setSiteContent((current) => ({
-              ...current,
-              home: { ...current.home, newsletter: { ...current.home.newsletter, title: value } }
-            }))
-          }
-          value={siteContent.home.newsletter.title}
-        />
-        <InputField
-          label="Placeholder do campo"
-          onChange={(value) =>
-            setSiteContent((current) => ({
-              ...current,
-              home: { ...current.home, newsletter: { ...current.home.newsletter, placeholder: value } }
-            }))
-          }
-          value={siteContent.home.newsletter.placeholder}
-        />
-        <InputField
-          label="Texto do botão"
-          onChange={(value) =>
-            setSiteContent((current) => ({
-              ...current,
-              home: { ...current.home, newsletter: { ...current.home.newsletter, buttonLabel: value } }
-            }))
-          }
-          value={siteContent.home.newsletter.buttonLabel}
-        />
-        <InputField
-          label="Texto carregando"
-          onChange={(value) =>
-            setSiteContent((current) => ({
-              ...current,
-              home: { ...current.home, newsletter: { ...current.home.newsletter, loadingLabel: value } }
-            }))
-          }
-          value={siteContent.home.newsletter.loadingLabel}
-        />
-        <InputField
-          label="Mensagem de e-mail inválido"
-          onChange={(value) =>
-            setSiteContent((current) => ({
-              ...current,
-              home: { ...current.home, newsletter: { ...current.home.newsletter, invalidEmailMessage: value } }
-            }))
-          }
-          value={siteContent.home.newsletter.invalidEmailMessage}
-        />
-        <InputField
-          label="Mensagem de erro"
-          onChange={(value) =>
-            setSiteContent((current) => ({
-              ...current,
-              home: { ...current.home, newsletter: { ...current.home.newsletter, genericErrorMessage: value } }
-            }))
-          }
-          value={siteContent.home.newsletter.genericErrorMessage}
-        />
-        <div className="md:col-span-2">
-          <InputField
-            label="Mensagem de sucesso"
-            onChange={(value) =>
-              setSiteContent((current) => ({
-                ...current,
-                home: { ...current.home, newsletter: { ...current.home.newsletter, successMessage: value } }
-              }))
-            }
-            value={siteContent.home.newsletter.successMessage}
-          />
-        </div>
-      </SectionCard>
+        {activeTab === "contact" ? (
+          <Block description="Operational contact information exposed on the storefront." title="Contact Page">
+            <div className="md:col-span-2">
+              <Field label="Title" onChange={(value) => setSiteContent((current) => ({ ...current, contact: { ...current.contact, title: value } }))} value={siteContent.contact.title} />
+            </div>
+            <div className="md:col-span-2">
+              <Field label="Subtitle" onChange={(value) => setSiteContent((current) => ({ ...current, contact: { ...current.contact, subtitle: value } }))} textarea value={siteContent.contact.subtitle} />
+            </div>
+            <Field label="Email" onChange={(value) => setSiteContent((current) => ({ ...current, contact: { ...current.contact, email: value } }))} value={siteContent.contact.email} />
+            <Field label="WhatsApp" onChange={(value) => setSiteContent((current) => ({ ...current, contact: { ...current.contact, whatsapp: value } }))} value={siteContent.contact.whatsapp} />
+            <div className="md:col-span-2">
+              <Field label="Business hours" onChange={(value) => setSiteContent((current) => ({ ...current, contact: { ...current.contact, hours: value } }))} value={siteContent.contact.hours} />
+            </div>
+          </Block>
+        ) : null}
 
-      <SectionCard
-        description="Textos fixos da página individual do produto."
-        title="Página de Produto"
-      >
-        <InputField
-          label="Título se não encontrar"
-          onChange={(value) =>
-            setSiteContent((current) => ({
-              ...current,
-              home: { ...current.home, productPage: { ...current.home.productPage, notFoundTitle: value } }
-            }))
-          }
-          value={siteContent.home.productPage.notFoundTitle}
-        />
-        <InputField
-          label="Sufixo do título SEO"
-          onChange={(value) =>
-            setSiteContent((current) => ({
-              ...current,
-              home: { ...current.home, productPage: { ...current.home.productPage, metadataTitleSuffix: value } }
-            }))
-          }
-          value={siteContent.home.productPage.metadataTitleSuffix}
-        />
-        <InputField
-          label="Selo da página"
-          onChange={(value) =>
-            setSiteContent((current) => ({
-              ...current,
-              home: { ...current.home, productPage: { ...current.home.productPage, badge: value } }
-            }))
-          }
-          value={siteContent.home.productPage.badge}
-        />
-        <InputField
-          label="Botão de compra"
-          onChange={(value) =>
-            setSiteContent((current) => ({
-              ...current,
-              home: { ...current.home, productPage: { ...current.home.productPage, checkoutButtonLabel: value } }
-            }))
-          }
-          value={siteContent.home.productPage.checkoutButtonLabel}
-        />
-        <div className="md:col-span-2">
-          <InputField
-            label="Título dos relacionados"
-            onChange={(value) =>
-              setSiteContent((current) => ({
-                ...current,
-                home: { ...current.home, productPage: { ...current.home.productPage, relatedProductsTitle: value } }
-              }))
-            }
-            value={siteContent.home.productPage.relatedProductsTitle}
-          />
-        </div>
-      </SectionCard>
+        {message ? <div className="rounded-2xl border border-zinc-800 bg-zinc-900 px-4 py-3 text-sm text-zinc-300">{message}</div> : null}
 
-      <SectionCard
-        description="Textos institucionais da Genesis."
-        title="Sobre a Genesis"
-      >
-        <div className="md:col-span-2">
-          <InputField
-            label="Título da página Sobre"
-            onChange={(value) =>
-              setSiteContent((current) => ({ ...current, about: { ...current.about, title: value } }))
-            }
-            value={siteContent.about.title}
-          />
+        <div className="flex justify-end">
+          <button className="rounded-2xl bg-amber-300 px-5 py-3 text-sm font-semibold text-zinc-950 transition hover:bg-amber-200 disabled:opacity-60" disabled={saving} onClick={saveSiteContent} type="button">
+            {saving ? "Saving..." : "Save content changes"}
+          </button>
         </div>
-        <TextAreaField
-          label="Parágrafo 1"
-          onChange={(value) =>
-            setSiteContent((current) => ({ ...current, about: { ...current.about, paragraph1: value } }))
-          }
-          value={siteContent.about.paragraph1}
-        />
-        <TextAreaField
-          label="Parágrafo 2"
-          onChange={(value) =>
-            setSiteContent((current) => ({ ...current, about: { ...current.about, paragraph2: value } }))
-          }
-          value={siteContent.about.paragraph2}
-        />
-        <TextAreaField
-          label="Parágrafo 3"
-          onChange={(value) =>
-            setSiteContent((current) => ({ ...current, about: { ...current.about, paragraph3: value } }))
-          }
-          value={siteContent.about.paragraph3}
-        />
-      </SectionCard>
-
-      <SectionCard
-        description="Informações de contato e suporte da loja."
-        title="Contato"
-      >
-        <InputField
-          label="Título"
-          onChange={(value) =>
-            setSiteContent((current) => ({ ...current, contact: { ...current.contact, title: value } }))
-          }
-          value={siteContent.contact.title}
-        />
-        <InputField
-          label="Subtítulo"
-          onChange={(value) =>
-            setSiteContent((current) => ({ ...current, contact: { ...current.contact, subtitle: value } }))
-          }
-          value={siteContent.contact.subtitle}
-        />
-        <InputField
-          label="E-mail"
-          onChange={(value) =>
-            setSiteContent((current) => ({ ...current, contact: { ...current.contact, email: value } }))
-          }
-          value={siteContent.contact.email}
-        />
-        <InputField
-          label="WhatsApp"
-          onChange={(value) =>
-            setSiteContent((current) => ({ ...current, contact: { ...current.contact, whatsapp: value } }))
-          }
-          value={siteContent.contact.whatsapp}
-        />
-        <div className="md:col-span-2">
-          <InputField
-            label="Horário de atendimento"
-            onChange={(value) =>
-              setSiteContent((current) => ({ ...current, contact: { ...current.contact, hours: value } }))
-            }
-            value={siteContent.contact.hours}
-          />
-        </div>
-      </SectionCard>
-
-      <div className="sticky bottom-4 flex items-center justify-between gap-4 rounded-2xl border border-zinc-800 bg-zinc-950/95 p-4 backdrop-blur">
-        <div>
-          <p className="text-sm font-semibold text-zinc-100">Salvar alterações</p>
-          <p className="text-xs text-zinc-400">As mudanças de conteúdo serão aplicadas no site após salvar.</p>
-        </div>
-        <button
-          className="rounded-lg bg-amber-400 px-4 py-2 text-sm font-semibold text-zinc-950 disabled:opacity-60"
-          disabled={savingSiteContent}
-          onClick={saveSiteContent}
-          type="button"
-        >
-          {savingSiteContent ? "Salvando conteúdo..." : "Salvar conteúdo do site"}
-        </button>
       </div>
-
-      {message ? <p className="text-sm text-zinc-300">{message}</p> : null}
     </div>
   );
 }

@@ -28,6 +28,9 @@ export async function PUT(request: Request, context: { params: Promise<{ slug: s
   // Atualiza cache das páginas da loja após edição no painel.
   revalidatePath("/");
   revalidatePath(`/produtos/${slug}`);
+  revalidatePath("/admin-loja");
+  revalidatePath("/admin-loja/produtos");
+  revalidatePath(`/admin-loja/produtos/${slug}`);
 
   return NextResponse.json({ product: updated });
 }
@@ -49,6 +52,9 @@ export async function DELETE(_: Request, context: { params: Promise<{ slug: stri
 
   revalidatePath("/");
   revalidatePath(`/produtos/${slug}`);
+  revalidatePath("/admin-loja");
+  revalidatePath("/admin-loja/produtos");
+  revalidatePath(`/admin-loja/produtos/${slug}`);
 
   return NextResponse.json({ ok: true });
 }

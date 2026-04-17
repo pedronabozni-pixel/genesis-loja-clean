@@ -55,8 +55,9 @@ export async function POST(request: Request) {
       });
 
       await savePaidOrder({
-        stripeSessionId: session.id,
-        stripePaymentIntentId:
+        gateway: "stripe",
+        gatewayOrderId: session.id,
+        gatewayPaymentId:
           typeof session.payment_intent === "string" ? session.payment_intent : session.payment_intent?.id ?? null,
         customerEmail: session.customer_details?.email ?? session.customer_email ?? null,
         amountTotal: session.amount_total ?? 0,

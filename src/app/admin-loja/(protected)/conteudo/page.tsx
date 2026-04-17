@@ -8,8 +8,8 @@ export default async function AdminStoreContentPage() {
   return (
     <StoreAdminShell
       currentPath="/admin-loja/conteudo"
-      description="Edite textos institucionais, página Sobre e dados de contato da loja."
-      title="Conteúdo da Loja"
+      description="Structured CMS with focused areas for Home, Product Page, About and Contact."
+      title="Content (CMS)"
     >
       <SiteContentEditor initialSiteContent={siteContent} />
     </StoreAdminShell>

@@ -3,6 +3,7 @@ export type Product = {
   slug: string;
   name: string;
   category: string;
+  sku?: string;
   costCents: number;
   priceCents: number;
   shortDescription: string;
@@ -33,6 +34,56 @@ export type WhatsAppOrderFormData = {
 export type NewsletterLead = {
   email: string;
   createdAt: string;
+  status?: "new" | "contacted";
+};
+
+export type StoreOrderStatus = "pending" | "paid" | "shipped" | "delivered";
+
+export type StoreOrderItem = {
+  productId: string;
+  slug: string;
+  name: string;
+  quantity: number;
+  unitAmount: number;
+  image?: string;
+};
+
+export type StoreOrderRecord = {
+  id: string;
+  gateway: string;
+  gatewayOrderId: string;
+  gatewayPaymentId?: string | null;
+  customerEmail?: string | null;
+  amountTotal: number;
+  currency: string;
+  paymentStatus: string;
+  fulfillmentStatus: StoreOrderStatus;
+  items: StoreOrderItem[];
+  paidAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type StoreCustomerSummary = {
+  id: string;
+  name: string;
+  email: string;
+  totalSpent: number;
+  ordersCount: number;
+  lastOrderAt?: string | null;
+};
+
+export type DashboardMetrics = {
+  revenueToday: number;
+  ordersToday: number;
+  averageTicket: number;
+  recentOrders: StoreOrderRecord[];
+  topProducts: Array<{
+    productId: string;
+    name: string;
+    quantitySold: number;
+    revenue: number;
+  }>;
 };
 
 export type SiteContent = {

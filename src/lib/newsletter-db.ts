@@ -59,9 +59,11 @@ async function initializeNewsletterDb() {
     CREATE TABLE IF NOT EXISTS newsletter_leads (
       id BIGSERIAL PRIMARY KEY,
       email TEXT NOT NULL UNIQUE,
+      status TEXT NOT NULL DEFAULT 'new',
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `);
+  await db.query("ALTER TABLE newsletter_leads ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'new'");
 
   const countResult = await db.query<{ total: string }>("SELECT COUNT(*)::text AS total FROM newsletter_leads");
   const total = Number.parseInt(countResult.rows[0]?.total ?? "0", 10);
@@ -88,7 +90,8 @@ export async function saveNewsletterLeadToDb(email: string) {
   const normalizedEmail = email.trim().toLowerCase();
   const lead: NewsletterLead = {
     email: normalizedEmail,
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
+    status: "new"
   };
 
   if (!process.env.DATABASE_URL) {
@@ -98,7 +101,8 @@ export async function saveNewsletterLeadToDb(email: string) {
     if (existingLead) {
       return {
         email: existingLead.email.trim().toLowerCase(),
-        createdAt: existingLead.createdAt
+        createdAt: existingLead.createdAt,
+        status: existingLead.status ?? "new"
       } satisfies NewsletterLead;
     }
 
@@ -110,9 +114,9 @@ export async function saveNewsletterLeadToDb(email: string) {
     await initializeNewsletterDb();
     const db = getPool();
 
-    const existing = await db.query<{ email: string; created_at: string }>(
+    const existing = await db.query<{ email: string; created_at: string; status: string }>(
       `
-        SELECT email, created_at
+        SELECT email, created_at, status
         FROM newsletter_leads
         WHERE email = $1
         LIMIT 1
@@ -123,16 +127,17 @@ export async function saveNewsletterLeadToDb(email: string) {
     if (existing.rows[0]) {
       return {
         email: existing.rows[0].email,
-        createdAt: new Date(existing.rows[0].created_at).toISOString()
+        createdAt: new Date(existing.rows[0].created_at).toISOString(),
+        status: existing.rows[0].status === "contacted" ? "contacted" : "new"
       } satisfies NewsletterLead;
     }
 
     await db.query(
       `
-        INSERT INTO newsletter_leads (email, created_at)
-        VALUES ($1, $2)
+        INSERT INTO newsletter_leads (email, status, created_at)
+        VALUES ($1, $2, $3)
       `,
-      [lead.email, lead.createdAt]
+      [lead.email, lead.status, lead.createdAt]
     );
 
     const legacyLeads = await readLegacyLeadsJson();
@@ -154,7 +159,8 @@ export async function saveNewsletterLeadToDb(email: string) {
     if (existingLead) {
       return {
         email: existingLead.email.trim().toLowerCase(),
-        createdAt: existingLead.createdAt
+        createdAt: existingLead.createdAt,
+        status: existingLead.status ?? "new"
       } satisfies NewsletterLead;
     }
 
@@ -172,9 +178,9 @@ export async function getNewsletterLeadsFromDb() {
     await initializeNewsletterDb();
     const db = getPool();
 
-    const result = await db.query<{ email: string; created_at: string }>(
+    const result = await db.query<{ email: string; created_at: string; status: string }>(
       `
-        SELECT email, created_at
+        SELECT email, created_at, status
         FROM newsletter_leads
         ORDER BY created_at DESC
       `
@@ -182,7 +188,8 @@ export async function getNewsletterLeadsFromDb() {
 
     return result.rows.map((row) => ({
       email: row.email,
-      createdAt: new Date(row.created_at).toISOString()
+      createdAt: new Date(row.created_at).toISOString(),
+      status: row.status === "contacted" ? "contacted" : "new"
     })) satisfies NewsletterLead[];
   } catch (error) {
     if (isDatabaseConnectionError(error)) {
@@ -190,5 +197,59 @@ export async function getNewsletterLeadsFromDb() {
     }
 
     throw error;
+  }
+}
+
+export async function updateNewsletterLeadStatus(email: string, status: "new" | "contacted") {
+  const normalizedEmail = email.trim().toLowerCase();
+
+  if (!process.env.DATABASE_URL) {
+    const leads = await readLegacyLeadsJson();
+    const updated = leads.map((lead) =>
+      lead.email.trim().toLowerCase() === normalizedEmail ? { ...lead, status } : { ...lead, status: lead.status ?? "new" }
+    );
+    await writeLegacyLeadsJson(updated);
+    return updated.find((lead) => lead.email.trim().toLowerCase() === normalizedEmail) ?? null;
+  }
+
+  try {
+    await initializeNewsletterDb();
+    const db = getPool();
+    const result = await db.query<{ email: string; created_at: string; status: string }>(
+      `
+        UPDATE newsletter_leads
+        SET status = $2
+        WHERE email = $1
+        RETURNING email, created_at, status
+      `,
+      [normalizedEmail, status]
+    );
+
+    if (!result.rows[0]) {
+      return null;
+    }
+
+    const leads = await readLegacyLeadsJson();
+    const updatedLegacy = leads.map((lead) =>
+      lead.email.trim().toLowerCase() === normalizedEmail ? { ...lead, status } : { ...lead, status: lead.status ?? "new" }
+    );
+    await writeLegacyLeadsJson(updatedLegacy);
+
+    return {
+      email: result.rows[0].email,
+      createdAt: new Date(result.rows[0].created_at).toISOString(),
+      status: result.rows[0].status === "contacted" ? "contacted" : "new"
+    } satisfies NewsletterLead;
+  } catch (error) {
+    if (!isDatabaseConnectionError(error)) {
+      throw error;
+    }
+
+    const leads = await readLegacyLeadsJson();
+    const updated = leads.map((lead) =>
+      lead.email.trim().toLowerCase() === normalizedEmail ? { ...lead, status } : { ...lead, status: lead.status ?? "new" }
+    );
+    await writeLegacyLeadsJson(updated);
+    return updated.find((lead) => lead.email.trim().toLowerCase() === normalizedEmail) ?? null;
   }
 }
