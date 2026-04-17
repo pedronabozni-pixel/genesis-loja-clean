@@ -45,6 +45,7 @@ type ProductRow = {
   slug: string;
   name: string;
   category: string;
+  sku: string | null;
   cost_cents: number;
   price_cents: number;
   short_description: string;
@@ -68,6 +69,7 @@ function rowToProduct(row: ProductRow): Product {
     slug: row.slug,
     name: row.name,
     category: row.category,
+    sku: row.sku ?? "",
     costCents: Number(row.cost_cents),
     priceCents: Number(row.price_cents),
     shortDescription: row.short_description,
@@ -94,6 +96,7 @@ function normalizeProduct(product: Product): Product {
 
   return {
     ...product,
+    sku: product.sku?.trim() ?? "",
     videoUrl: product.videoUrl ?? "",
     stockHint: product.stockHint ?? "",
     stockQuantity,
@@ -119,6 +122,7 @@ async function initializeProductsTable() {
       slug TEXT NOT NULL UNIQUE,
       name TEXT NOT NULL,
       category TEXT NOT NULL,
+      sku TEXT,
       cost_cents INTEGER NOT NULL,
       price_cents INTEGER NOT NULL,
       short_description TEXT NOT NULL,
@@ -139,6 +143,7 @@ async function initializeProductsTable() {
 
   await db.query("ALTER TABLE store_products ADD COLUMN IF NOT EXISTS stock_quantity INTEGER");
   await db.query("ALTER TABLE store_products ADD COLUMN IF NOT EXISTS colors JSONB NOT NULL DEFAULT '[]'::jsonb");
+  await db.query("ALTER TABLE store_products ADD COLUMN IF NOT EXISTS sku TEXT");
 
   const result = await db.query<{ total: string }>("SELECT COUNT(*)::text AS total FROM store_products");
   const total = Number.parseInt(result.rows[0]?.total ?? "0", 10);
@@ -151,13 +156,13 @@ async function initializeProductsTable() {
         `
           INSERT INTO store_products (
             id, slug, name, category, cost_cents, price_cents, short_description, description,
-            image, video_url, checkout_url, rating, reviews_count, is_best_seller, is_anchor,
+            sku, image, video_url, checkout_url, rating, reviews_count, is_best_seller, is_anchor,
             stock_hint, stock_quantity, colors, features
           )
           VALUES (
             $1, $2, $3, $4, $5, $6, $7, $8,
-            $9, $10, $11, $12, $13, $14, $15,
-            $16, $17, $18::jsonb, $19::jsonb
+            $9, $10, $11, $12, $13, $14, $15, $16,
+            $17, $18, $19::jsonb, $20::jsonb
           )
           ON CONFLICT (id) DO NOTHING
         `,
@@ -170,6 +175,7 @@ async function initializeProductsTable() {
           product.priceCents,
           product.shortDescription,
           product.description,
+          product.sku || null,
           product.image,
           product.videoUrl || null,
           product.checkoutUrl,
@@ -263,21 +269,22 @@ export async function updateProductInStore(slug: string, payload: Product) {
       SET slug = $2,
           name = $3,
           category = $4,
-          cost_cents = $5,
-          price_cents = $6,
-          short_description = $7,
-          description = $8,
-          image = $9,
-          video_url = $10,
-          checkout_url = $11,
-          rating = $12,
-          reviews_count = $13,
-          is_best_seller = $14,
-          is_anchor = $15,
-          stock_hint = $16,
-          stock_quantity = $17,
-          colors = $18::jsonb,
-          features = $19::jsonb
+          sku = $5,
+          cost_cents = $6,
+          price_cents = $7,
+          short_description = $8,
+          description = $9,
+          image = $10,
+          video_url = $11,
+          checkout_url = $12,
+          rating = $13,
+          reviews_count = $14,
+          is_best_seller = $15,
+          is_anchor = $16,
+          stock_hint = $17,
+          stock_quantity = $18,
+          colors = $19::jsonb,
+          features = $20::jsonb
       WHERE slug = $1
       RETURNING *
     `,
@@ -286,6 +293,7 @@ export async function updateProductInStore(slug: string, payload: Product) {
       product.slug,
       product.name,
       product.category,
+      product.sku || null,
       product.costCents,
       product.priceCents,
       product.shortDescription,
@@ -324,14 +332,14 @@ export async function createProductInStore(payload: Product) {
   const result = await db.query<ProductRow>(
     `
       INSERT INTO store_products (
-        id, slug, name, category, cost_cents, price_cents, short_description, description,
+        id, slug, name, category, sku, cost_cents, price_cents, short_description, description,
         image, video_url, checkout_url, rating, reviews_count, is_best_seller, is_anchor,
         stock_hint, stock_quantity, colors, features
       )
       VALUES (
         $1, $2, $3, $4, $5, $6, $7, $8,
-        $9, $10, $11, $12, $13, $14, $15,
-        $16, $17, $18::jsonb, $19::jsonb
+        $9, $10, $11, $12, $13, $14, $15, $16,
+        $17, $18, $19::jsonb, $20::jsonb
       )
       RETURNING *
     `,
@@ -340,6 +348,7 @@ export async function createProductInStore(payload: Product) {
       product.slug,
       product.name,
       product.category,
+      product.sku || null,
       product.costCents,
       product.priceCents,
       product.shortDescription,

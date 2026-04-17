@@ -114,7 +114,7 @@ export function StoreAdminProductEditor({
         description: "Descrição completa do produto.",
         image: "",
         videoUrl: "",
-        checkoutUrl: "https://buy.stripe.com/SEULINK",
+        checkoutUrl: "",
         rating: 5,
         reviewsCount: 1,
         features: ["Novo diferencial do produto"],
@@ -389,10 +389,11 @@ export function StoreAdminProductEditor({
             </div>
 
             <label className="text-sm text-zinc-300 md:col-span-2">
-              Link Stripe
+              Link externo opcional
               <input
                 className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-zinc-100"
                 onChange={(event) => updateField(index, "checkoutUrl", event.target.value)}
+                placeholder="Campo legado. O checkout do site usa Mercado Pago."
                 value={product.checkoutUrl}
               />
             </label>

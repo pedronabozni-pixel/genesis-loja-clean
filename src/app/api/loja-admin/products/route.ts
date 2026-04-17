@@ -36,13 +36,14 @@ export async function POST(request: Request) {
     slug,
     name,
     category: String(body.category ?? "Nova categoria"),
+    sku: String(body.sku ?? ""),
     costCents: Number(body.costCents ?? 0),
     priceCents: Number(body.priceCents ?? 0),
     shortDescription: String(body.shortDescription ?? "Descrição curta do produto."),
     description: String(body.description ?? "Descrição completa do produto."),
     image: String(body.image ?? ""),
     videoUrl: String(body.videoUrl ?? ""),
-    checkoutUrl: String(body.checkoutUrl ?? "https://buy.stripe.com/SEULINK"),
+    checkoutUrl: String(body.checkoutUrl ?? ""),
     rating: Number(body.rating ?? 5),
     reviewsCount: Number(body.reviewsCount ?? 1),
     features: Array.isArray(body.features) ? body.features : ["Novo diferencial do produto"],
@@ -58,6 +59,9 @@ export async function POST(request: Request) {
 
   revalidatePath("/");
   revalidatePath(`/produtos/${created.slug}`);
+  revalidatePath("/admin-loja");
+  revalidatePath("/admin-loja/produtos");
+  revalidatePath(`/admin-loja/produtos/${created.slug}`);
 
   return NextResponse.json({ product: created });
 }
