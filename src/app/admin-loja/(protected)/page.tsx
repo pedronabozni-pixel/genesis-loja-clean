@@ -4,7 +4,13 @@ import { formatAdminCurrency, formatAdminDate, getOrderStatusMeta } from "@/lib/
 import { getDashboardMetrics } from "@/lib/order-db";
 
 export default async function AdminStorePage() {
-  const metrics = await getDashboardMetrics();
+  const metrics = await getDashboardMetrics().catch(() => ({
+    revenueToday: 0,
+    ordersToday: 0,
+    averageTicket: 0,
+    recentOrders: [],
+    topProducts: []
+  }));
 
   return (
     <StoreAdminShell

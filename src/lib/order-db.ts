@@ -203,11 +203,13 @@ export async function getOrders() {
 
     return result.rows.map(rowToOrder);
   } catch (error) {
-    if (isDatabaseConnectionError(error)) {
-      return [] as StoreOrderRecord[];
+    const message = error instanceof Error ? error.message : "Erro desconhecido ao carregar pedidos.";
+
+    if (!isDatabaseConnectionError(error)) {
+      console.error("[admin:getOrders] fallback to empty list:", message);
     }
 
-    throw error;
+    return [] as StoreOrderRecord[];
   }
 }
 
