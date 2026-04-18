@@ -66,6 +66,19 @@ function mapFulfillmentStatus(value: string | null | undefined): StoreOrderStatu
   return "pending";
 }
 
+function normalizeTimestamp(value: unknown) {
+  if (!value) {
+    return null;
+  }
+
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+
+  const parsed = new Date(String(value));
+  return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
+}
+
 function rowToOrder(row: OrderRow): StoreOrderRecord {
   return {
     id: row.id,
@@ -79,9 +92,9 @@ function rowToOrder(row: OrderRow): StoreOrderRecord {
     paymentStatus: row.payment_status,
     fulfillmentStatus: mapFulfillmentStatus(row.fulfillment_status),
     items: Array.isArray(row.items) ? row.items : [],
-    paidAt: row.paid_at,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at
+    paidAt: normalizeTimestamp(row.paid_at),
+    createdAt: normalizeTimestamp(row.created_at) ?? new Date(0).toISOString(),
+    updatedAt: normalizeTimestamp(row.updated_at) ?? new Date(0).toISOString()
   };
 }
 
@@ -228,7 +241,7 @@ export async function getDashboardMetrics() {
 }
 
 function getReferenceDate(order: StoreOrderRecord) {
-  return order.paidAt ?? order.createdAt;
+  return normalizeTimestamp(order.paidAt ?? order.createdAt) ?? new Date(0).toISOString();
 }
 
 function isInsidePeriod(referenceDate: string, period: DashboardPeriod, now: Date) {
