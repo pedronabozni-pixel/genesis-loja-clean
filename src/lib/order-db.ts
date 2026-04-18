@@ -1,10 +1,11 @@
 import { Pool } from "pg";
-import type { DashboardMetrics, StoreCustomerSummary, StoreOrderItem, StoreOrderRecord, StoreOrderStatus } from "@/types/store";
+import type { DashboardMetrics, DashboardPeriod, StoreCustomerSummary, StoreOrderItem, StoreOrderRecord, StoreOrderStatus } from "@/types/store";
 
 type OrderPayload = {
   gateway: string;
   gatewayOrderId: string;
   gatewayPaymentId?: string | null;
+  customerName?: string | null;
   customerEmail?: string | null;
   amountTotal: number;
   currency: string;
@@ -19,6 +20,7 @@ type OrderRow = {
   gateway: string;
   gateway_order_id: string;
   gateway_payment_id: string | null;
+  customer_name: string | null;
   customer_email: string | null;
   amount_total: number;
   currency: string;
@@ -70,6 +72,7 @@ function rowToOrder(row: OrderRow): StoreOrderRecord {
     gateway: row.gateway,
     gatewayOrderId: row.gateway_order_id,
     gatewayPaymentId: row.gateway_payment_id,
+    customerName: row.customer_name,
     customerEmail: row.customer_email,
     amountTotal: Number(row.amount_total),
     currency: row.currency,
@@ -95,6 +98,7 @@ async function initializeOrdersTable() {
       gateway TEXT NOT NULL DEFAULT 'stripe',
       gateway_order_id TEXT,
       gateway_payment_id TEXT,
+      customer_name TEXT,
       customer_email TEXT,
       amount_total INTEGER NOT NULL,
       currency TEXT NOT NULL,
@@ -111,6 +115,7 @@ async function initializeOrdersTable() {
   await db.query("ALTER TABLE store_orders ADD COLUMN IF NOT EXISTS gateway TEXT NOT NULL DEFAULT 'stripe'");
   await db.query("ALTER TABLE store_orders ADD COLUMN IF NOT EXISTS gateway_order_id TEXT");
   await db.query("ALTER TABLE store_orders ADD COLUMN IF NOT EXISTS gateway_payment_id TEXT");
+  await db.query("ALTER TABLE store_orders ADD COLUMN IF NOT EXISTS customer_name TEXT");
   await db.query("ALTER TABLE store_orders ADD COLUMN IF NOT EXISTS fulfillment_status TEXT NOT NULL DEFAULT 'pending'");
   await db.query(
     "UPDATE store_orders SET gateway = 'stripe', gateway_order_id = COALESCE(gateway_order_id, stripe_session_id), gateway_payment_id = COALESCE(gateway_payment_id, stripe_payment_intent_id)"
@@ -130,6 +135,7 @@ export async function savePaidOrder(order: OrderPayload) {
         gateway,
         gateway_order_id,
         gateway_payment_id,
+        customer_name,
         customer_email,
         amount_total,
         currency,
@@ -140,12 +146,13 @@ export async function savePaidOrder(order: OrderPayload) {
         raw_payload,
         updated_at
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9::jsonb, $10, $11::jsonb, NOW())
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb, $11, $12::jsonb, NOW())
       ON CONFLICT (gateway_payment_id)
       DO UPDATE SET
         gateway = EXCLUDED.gateway,
         gateway_order_id = EXCLUDED.gateway_order_id,
         gateway_payment_id = EXCLUDED.gateway_payment_id,
+        customer_name = EXCLUDED.customer_name,
         customer_email = EXCLUDED.customer_email,
         amount_total = EXCLUDED.amount_total,
         currency = EXCLUDED.currency,
@@ -160,6 +167,7 @@ export async function savePaidOrder(order: OrderPayload) {
       order.gateway,
       order.gatewayOrderId,
       order.gatewayPaymentId ?? null,
+      order.customerName ?? null,
       order.customerEmail ?? null,
       order.amountTotal,
       order.currency,
@@ -187,6 +195,7 @@ export async function getOrders() {
           gateway,
           gateway_order_id,
           gateway_payment_id,
+          customer_name,
           customer_email,
           amount_total,
           currency,
@@ -215,19 +224,48 @@ export async function getOrders() {
 
 export async function getDashboardMetrics() {
   const orders = await getOrders();
+  return buildDashboardMetrics(orders, "30d");
+}
+
+function getReferenceDate(order: StoreOrderRecord) {
+  return order.paidAt ?? order.createdAt;
+}
+
+function isInsidePeriod(referenceDate: string, period: DashboardPeriod, now: Date) {
+  if (period === "all") {
+    return true;
+  }
+
+  const periodDays = period === "7d" ? 7 : period === "30d" ? 30 : 90;
+  const cutoff = new Date(now);
+  cutoff.setHours(0, 0, 0, 0);
+  cutoff.setDate(cutoff.getDate() - (periodDays - 1));
+  return new Date(referenceDate) >= cutoff;
+}
+
+function buildDashboardMetrics(orders: StoreOrderRecord[], period: DashboardPeriod) {
   const now = new Date();
   const todayKey = now.toISOString().slice(0, 10);
-  const todayOrders = orders.filter((order) => {
-    const referenceDate = order.paidAt ?? order.createdAt;
-    return referenceDate.slice(0, 10) === todayKey;
-  });
+  const filteredOrders = orders.filter((order) => isInsidePeriod(getReferenceDate(order), period, now));
+  const todayOrders = filteredOrders.filter((order) => getReferenceDate(order).slice(0, 10) === todayKey);
 
   const revenueToday = todayOrders.reduce((sum, order) => sum + order.amountTotal, 0);
   const ordersToday = todayOrders.length;
-  const averageTicket = ordersToday > 0 ? Math.round(revenueToday / ordersToday) : 0;
+  const totalSales = filteredOrders.reduce((sum, order) => sum + order.amountTotal, 0);
+  const ordersInPeriod = filteredOrders.length;
+  const averageTicket = ordersInPeriod > 0 ? Math.round(totalSales / ordersInPeriod) : 0;
   const topProductMap = new Map<string, { productId: string; name: string; quantitySold: number; revenue: number }>();
+  const salesSeriesMap = new Map<string, { label: string; revenue: number; orders: number }>();
 
-  for (const order of orders) {
+  for (const order of filteredOrders) {
+    const dayKey = getReferenceDate(order).slice(0, 10);
+    const currentDay = salesSeriesMap.get(dayKey);
+    salesSeriesMap.set(dayKey, {
+      label: dayKey,
+      revenue: (currentDay?.revenue ?? 0) + order.amountTotal,
+      orders: (currentDay?.orders ?? 0) + 1
+    });
+
     for (const item of order.items) {
       const key = item.productId || item.name;
       const current = topProductMap.get(key);
@@ -244,47 +282,128 @@ export async function getDashboardMetrics() {
   const topProducts = Array.from(topProductMap.values())
     .sort((a, b) => (b.quantitySold === a.quantitySold ? b.revenue - a.revenue : b.quantitySold - a.quantitySold))
     .slice(0, 5);
+  const salesSeries = Array.from(salesSeriesMap.values()).sort((a, b) => a.label.localeCompare(b.label));
 
   return {
+    period,
     revenueToday,
+    totalSales,
     ordersToday,
+    ordersInPeriod,
     averageTicket,
-    recentOrders: orders.slice(0, 8),
+    recentOrders: filteredOrders.slice(0, 8),
     topProducts
+    ,
+    salesSeries
   } satisfies DashboardMetrics;
+}
+
+export async function getDashboardMetricsForPeriod(period: DashboardPeriod) {
+  const orders = await getOrders();
+  return buildDashboardMetrics(orders, period);
 }
 
 export async function getCustomerSummaries() {
   const orders = await getOrders();
-  const customerMap = new Map<string, StoreCustomerSummary>();
+  const customerMap = new Map<string, StoreCustomerSummary & { productMap: Map<string, { name: string; quantity: number }> }>();
 
   for (const order of orders) {
     const email = order.customerEmail?.trim().toLowerCase();
 
-    if (!email) {
+    if (!email && !order.customerName?.trim()) {
       continue;
     }
 
-    const current = customerMap.get(email);
-    const nameFromEmail = email.split("@")[0]?.replace(/[._-]+/g, " ") ?? email;
-    const name = nameFromEmail
+    const customerId = email || `manual:${order.customerName?.trim().toLowerCase()}`;
+    const current = customerMap.get(customerId);
+    const nameFromEmail = (email?.split("@")[0] ?? order.customerName ?? "Cliente").replace(/[._-]+/g, " ");
+    const name = (order.customerName?.trim() || nameFromEmail)
       .split(" ")
       .filter(Boolean)
       .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
       .join(" ");
 
-    customerMap.set(email, {
-      id: email,
+    customerMap.set(customerId, {
+      id: customerId,
       name,
-      email,
+      email: email ?? "Sem e-mail",
       totalSpent: (current?.totalSpent ?? 0) + order.amountTotal,
       ordersCount: (current?.ordersCount ?? 0) + 1,
+      purchasedProducts: current?.purchasedProducts ?? [],
+      productMap: current?.productMap ?? new Map<string, { name: string; quantity: number }>(),
       lastOrderAt:
         !current?.lastOrderAt || new Date(order.createdAt) > new Date(current.lastOrderAt)
           ? order.createdAt
           : current.lastOrderAt
     });
+
+    const customer = customerMap.get(customerId);
+
+    if (!customer) {
+      continue;
+    }
+
+    for (const item of order.items) {
+      const key = item.productId || item.slug || item.name;
+      const existing = customer.productMap.get(key);
+
+      customer.productMap.set(key, {
+        name: item.name,
+        quantity: (existing?.quantity ?? 0) + item.quantity
+      });
+    }
   }
 
-  return Array.from(customerMap.values()).sort((a, b) => b.totalSpent - a.totalSpent);
+  return Array.from(customerMap.values())
+    .map(({ productMap, ...customer }) => ({
+      ...customer,
+      purchasedProducts: Array.from(productMap.values()).sort((a, b) => b.quantity - a.quantity || a.name.localeCompare(b.name))
+    }))
+    .sort((a, b) => b.totalSpent - a.totalSpent);
+}
+
+export async function createManualOrder(input: {
+  customerName: string;
+  customerEmail?: string | null;
+  fulfillmentStatus: StoreOrderStatus;
+  paidAt?: string | null;
+  items: Array<{
+    name: string;
+    quantity: number;
+    unitAmount: number;
+  }>;
+}) {
+  const timestamp = Date.now();
+  const gatewayOrderId = `manual-${timestamp}`;
+  const amountTotal = input.items.reduce((sum, item) => sum + item.quantity * item.unitAmount, 0);
+
+  await savePaidOrder({
+    gateway: "manual",
+    gatewayOrderId,
+    gatewayPaymentId: `manual-payment-${timestamp}`,
+    customerName: input.customerName,
+    customerEmail: input.customerEmail?.trim() || null,
+    amountTotal,
+    currency: "brl",
+    paymentStatus: input.fulfillmentStatus === "pending" ? "pending" : "paid",
+    items: input.items.map((item, index) => ({
+      productId: `manual-${timestamp}-${index}`,
+      slug: "",
+      name: item.name,
+      quantity: item.quantity,
+      unitAmount: item.unitAmount
+    })),
+    paidAt: input.paidAt ?? new Date().toISOString(),
+    rawPayload: {
+      source: "manual_admin_entry",
+      customerName: input.customerName,
+      customerEmail: input.customerEmail ?? null
+    }
+  });
+
+  const db = getPool();
+  await db.query("UPDATE store_orders SET fulfillment_status = $2 WHERE gateway_order_id = $1", [gatewayOrderId, input.fulfillmentStatus]);
+
+  const orders = await getOrders();
+  return orders.find((order) => order.gatewayOrderId === gatewayOrderId) ?? null;
 }

@@ -53,6 +53,7 @@ export type StoreOrderRecord = {
   gateway: string;
   gatewayOrderId: string;
   gatewayPaymentId?: string | null;
+  customerName?: string | null;
   customerEmail?: string | null;
   amountTotal: number;
   currency: string;
@@ -71,11 +72,18 @@ export type StoreCustomerSummary = {
   totalSpent: number;
   ordersCount: number;
   lastOrderAt?: string | null;
+  purchasedProducts: Array<{
+    name: string;
+    quantity: number;
+  }>;
 };
 
 export type DashboardMetrics = {
+  period: DashboardPeriod;
   revenueToday: number;
+  totalSales: number;
   ordersToday: number;
+  ordersInPeriod: number;
   averageTicket: number;
   recentOrders: StoreOrderRecord[];
   topProducts: Array<{
@@ -84,7 +92,14 @@ export type DashboardMetrics = {
     quantitySold: number;
     revenue: number;
   }>;
+  salesSeries: Array<{
+    label: string;
+    revenue: number;
+    orders: number;
+  }>;
 };
+
+export type DashboardPeriod = "7d" | "30d" | "90d" | "all";
 
 export type SiteContent = {
   home: {

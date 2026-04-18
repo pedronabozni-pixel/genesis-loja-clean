@@ -26,6 +26,13 @@ export function formatRelativeCompactDate(value?: string | null) {
   }).format(new Date(value));
 }
 
+export function formatAdminDayLabel(value: string) {
+  return new Intl.DateTimeFormat("pt-BR", {
+    day: "2-digit",
+    month: "short"
+  }).format(new Date(`${value}T00:00:00.000Z`));
+}
+
 export function getProductStatus(stockQuantity?: number | null) {
   if (stockQuantity === 0) {
     return {
