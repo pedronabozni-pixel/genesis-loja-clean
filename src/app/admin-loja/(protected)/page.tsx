@@ -1,9 +1,12 @@
 import Link from "next/link";
+import { unstable_noStore as noStore } from "next/cache";
 import { AdminBadge, AdminCard, AdminCardHeader, AdminEmptyState, AdminStatCard } from "@/components/admin/admin-ui";
 import { StoreAdminShell } from "@/components/admin/store-admin-shell";
 import { formatAdminCurrency, formatAdminDate, formatAdminDayLabel, getOrderStatusMeta } from "@/lib/admin-format";
 import { getDashboardMetricsForPeriod } from "@/lib/order-db";
 import type { DashboardMetrics, DashboardPeriod } from "@/types/store";
+
+export const dynamic = "force-dynamic";
 
 const periodOptions: Array<{ value: DashboardPeriod; label: string }> = [
   { value: "7d", label: "7D" },
@@ -99,6 +102,8 @@ export default async function AdminStorePage({
 }: {
   searchParams?: Promise<{ period?: string }>;
 }) {
+  noStore();
+
   const params = searchParams ? await searchParams : undefined;
   const period = params?.period;
   const selectedPeriod: DashboardPeriod =
